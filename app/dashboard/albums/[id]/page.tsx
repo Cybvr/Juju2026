@@ -20,18 +20,20 @@ const mockAlbums: Album[] = [
 ]
 
 // Mock images for each album
-const mockAlbumImages: Record<string, { id: string; url: string; createdAt: string }[]> = {
+const mockAlbumImages: Record<string, { id: string; url: string }[]> = {
   "1": [
-    { id: "1-1", url: "/images/boxer-1.jpg", createdAt: "16 hours ago" },
-    { id: "1-2", url: "/images/boxer-2.jpg", createdAt: "16 hours ago" },
-    { id: "1-3", url: "/images/boxer-3.jpg", createdAt: "17 hours ago" },
+    { id: "1-1", url: "/images/boxer-1.jpg" },
+    { id: "1-2", url: "/images/boxer-2.jpg" },
+    { id: "1-3", url: "/images/boxer-3.jpg" },
+    { id: "1-4", url: "/images/boxer-4.jpg" },
+    { id: "1-5", url: "/images/boxer-1.jpg" },
   ],
   "2": [
-    { id: "2-1", url: "/images/boxer-2.jpg", createdAt: "16 hours ago" },
-    { id: "2-2", url: "/images/boxer-4.jpg", createdAt: "18 hours ago" },
+    { id: "2-1", url: "/images/boxer-2.jpg" },
+    { id: "2-2", url: "/images/boxer-4.jpg" },
   ],
   "3": [
-    { id: "3-1", url: "/images/boxer-3.jpg", createdAt: "1 day ago" },
+    { id: "3-1", url: "/images/boxer-3.jpg" },
   ],
 }
 
@@ -46,10 +48,10 @@ export default function AlbumPage() {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar albums={mockAlbums} activeAlbumId={albumId} />
-      <div className="flex-1 border-r border-border">
-        <Chat albumName={albumName} />
+      <div className="w-[400px] lg:w-[500px] border-r border-border">
+        <Chat />
       </div>
-      <div className="w-[400px] lg:w-[500px]">
+      <div className="flex-1">
         <AlbumContent 
           albumId={albumId} 
           albumName={albumName} 
