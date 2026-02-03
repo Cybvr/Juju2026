@@ -1,5 +1,4 @@
-import { Paperclip, AtSign, Slash, RotateCcw, Loader2 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { auth, db } from "@/lib/firebase"
 import { chatService } from "@/lib/services/geminiService"
@@ -7,27 +6,50 @@ import { albumService } from "@/lib/services/albumService"
 import { imageService } from "@/lib/services/imageService"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { toast } from "sonner"
+import { PromptBox } from "@/components/prompt-box"
 
 export function GeneratePanel({ albumName }: { albumName?: string }) {
-  const [prompt, setPrompt] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [attachments, setAttachments] = useState<string[]>([])
   const router = useRouter()
 
-  const handleSubmit = async () => {
-    if (!prompt.trim() || !auth.currentUser || isLoading) return
+  useEffect(() => {
+    // Check for pending prompt and attachments from landing page
+    const pendingPrompt = sessionStorage.getItem('pending_prompt')
+    const pendingAttachmentsRaw = sessionStorage.getItem('pending_attachments')
 
-    const userPrompt = prompt.trim()
-    setPrompt("")
+    if (pendingPrompt && auth.currentUser && !isLoading) {
+      sessionStorage.removeItem('pending_prompt')
+      sessionStorage.removeItem('pending_attachments')
+
+      let pendingAttachments: string[] = []
+      if (pendingAttachmentsRaw) {
+        try {
+          pendingAttachments = JSON.parse(pendingAttachmentsRaw)
+          setAttachments(pendingAttachments)
+        } catch (e) {
+          console.error("Failed to parse pending attachments")
+        }
+      }
+
+      handleGenerate(pendingPrompt, pendingAttachments)
+    }
+  }, [auth.currentUser])
+
+  const handleGenerate = async (prompt: string, currentAttachments: string[] = attachments) => {
+    if (!auth.currentUser || isLoading) return
+
     setIsLoading(true)
 
     try {
       // 1. Get initial response from Gemini
+      // If we have attachments, we'd ideally pass them to Gemini as well
       const { text: responseText, generatePrompt } = await chatService.sendMessage([
-        { role: "user", parts: [{ text: userPrompt }] }
+        { role: "user", parts: [{ text: prompt }] }
       ])
 
       // 2. Create a new album
-      const albumId = await albumService.createAlbum(auth.currentUser.uid, userPrompt.substring(0, 30))
+      const albumId = await albumService.createAlbum(auth.currentUser.uid, prompt.substring(0, 30))
 
       // 3. Save initial message pair to the NEW album
       await Promise.all([
@@ -35,7 +57,8 @@ export function GeneratePanel({ albumName }: { albumName?: string }) {
           albumId,
           userId: auth.currentUser.uid,
           role: "user",
-          content: userPrompt,
+          content: prompt,
+          attachments: currentAttachments,
           createdAt: serverTimestamp()
         }),
         addDoc(collection(db, "messages"), {
@@ -49,7 +72,12 @@ export function GeneratePanel({ albumName }: { albumName?: string }) {
 
       // 4. Trigger generation if needed
       if (generatePrompt) {
-        imageService.generateImage(auth.currentUser.uid, albumId, generatePrompt)
+        // Pass the first attachment as a reference image if available
+        imageService.generateImage(
+          auth.currentUser.uid,
+          albumId,
+          generatePrompt
+        )
         toast.info("Creating your first generation in a new album...")
       }
 
@@ -64,61 +92,32 @@ export function GeneratePanel({ albumName }: { albumName?: string }) {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-8 bg-background">
-      <h2 className="text-2xl font-serif font-semibold mb-16">Juju</h2>
-      {albumName ? (
-        <h1 className="text-4xl font-serif italic mb-8">{albumName}</h1>
-      ) : (
-        <h1 className="text-5xl font-serif italic mb-8">Reimagine reality</h1>
-      )}
-
-      <div className="w-full max-w-md">
-        <div className="border border-border rounded-xl p-4 bg-background shadow-sm focus-within:ring-1 focus-within:ring-primary/20 transition-all">
-          <textarea
-            rows={1}
-            placeholder="Generate any image"
-            value={prompt}
-            onChange={(e) => {
-              setPrompt(e.target.value)
-              e.target.style.height = 'auto'
-              e.target.style.height = `${e.target.scrollHeight}px`
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault()
-                handleSubmit()
-              }
-            }}
-            className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground mb-4 resize-none max-h-48"
-            disabled={isLoading}
-            style={{ height: 'auto' }}
-          />
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-secondary rounded-lg transition-colors disabled:opacity-50" disabled={isLoading}>
-                <Paperclip className="w-5 h-5 text-muted-foreground" />
-              </button>
-              <button className="p-2 hover:bg-secondary rounded-lg transition-colors disabled:opacity-50" disabled={isLoading}>
-                <AtSign className="w-5 h-5 text-muted-foreground" />
-              </button>
-              <button className="p-2 hover:bg-secondary rounded-lg transition-colors disabled:opacity-50" disabled={isLoading}>
-                <Slash className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Custom</span>
-              <button className="p-2 hover:bg-secondary rounded-lg transition-colors disabled:opacity-50" disabled={isLoading}>
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4 text-muted-foreground" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-center mt-4 text-muted-foreground">
-          or <button className="font-semibold text-foreground hover:underline">upload and edit</button>
-        </p>
+      <div className="mb-16 text-center">
+        <h2 className="text-2xl font-serif font-semibold mb-4 opacity-50">Juju</h2>
+        {albumName ? (
+          <h1 className="text-4xl font-serif italic mb-2">{albumName}</h1>
+        ) : (
+          <h1 className="text-5xl font-serif italic mb-2">Reimagine reality</h1>
+        )}
       </div>
+
+      <PromptBox
+        onSubmit={handleGenerate}
+        isLoading={isLoading}
+        variant="dashboard"
+        attachments={attachments}
+        onRemoveAttachment={(idx) => {
+          const newAttachments = [...attachments]
+          newAttachments.splice(idx, 1)
+          setAttachments(newAttachments)
+        }}
+      />
+
+      <p className="text-center mt-8 text-muted-foreground/60 transition-opacity hover:opacity-100 italic">
+        or <button className="font-semibold text-foreground/80 hover:underline">upload and edit</button>
+      </p>
     </div>
   )
 }
+
+
