@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import Link from "next/link"
+import { CreditCard } from "lucide-react"
 
 export default function AccountPage() {
     const [user, setUser] = useState<User | null>(null)
@@ -55,6 +57,23 @@ export default function AccountPage() {
                         <p className="text-xs text-muted-foreground italic">
                             Profile editing is managed through your social login provider.
                         </p>
+                    </div>
+
+                    <div className="grid gap-4 p-6 border rounded-xl bg-card">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-xl font-semibold">Subscription Plan</h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    You are currently on the <span className="font-medium">Free</span> plan
+                                </p>
+                            </div>
+                            <CreditCard className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                        <Link href="/account/plans">
+                            <Button variant="outline" className="w-fit">
+                                View Plans
+                            </Button>
+                        </Link>
                     </div>
 
                     <div className="grid gap-4 p-6 border rounded-xl bg-card border-destructive/20 text-destructive">

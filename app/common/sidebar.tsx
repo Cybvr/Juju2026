@@ -169,9 +169,9 @@ export function Sidebar({ albums, activeAlbumId, onNewAlbum }: SidebarProps) {
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.info("Billing is not yet implemented.")}>
+              <DropdownMenuItem onClick={() => router.push("/account/plans")}>
                 <CreditCard className="mr-2 h-4 w-4" />
-                <span>Upgrade</span>
+                <span>Plans</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
