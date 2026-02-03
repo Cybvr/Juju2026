@@ -1,22 +1,42 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Paperclip, AtSign, Slash, RotateCcw, Send } from "lucide-react"
+import { Paperclip, AtSign, Slash, RotateCcw, ChevronDown } from "lucide-react"
+
+interface Attachment {
+  id: string
+  url: string
+}
 
 interface Message {
   id: string
   role: "user" | "assistant"
   content: string
+  attachments?: Attachment[]
+  date?: string
 }
 
 interface ChatProps {
-  albumName: string
   onGenerate?: (prompt: string) => void
 }
 
-export function Chat({ albumName, onGenerate }: ChatProps) {
-  const [messages, setMessages] = useState<Message[]>([])
+export function Chat({ onGenerate }: ChatProps) {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      role: "user",
+      content: "how can we recreate something conceptually, aesthetically similar to this with a blonde very short hair boxer.",
+      date: "February 3, 2026",
+      attachments: [{ id: "1", url: "/images/boxer-1.jpg" }]
+    },
+    {
+      id: "2", 
+      role: "assistant",
+      content: "I love this concept—the striking contrast between a living person and classical sculptural forms creates such a powerful visual tension. Let me create some variations with a blonde short-haired boxer..."
+    }
+  ])
   const [input, setInput] = useState("")
 
   const handleSend = () => {
@@ -30,57 +50,69 @@ export function Chat({ albumName, onGenerate }: ChatProps) {
     setMessages((prev) => [...prev, userMessage])
     onGenerate?.(input)
     setInput("")
-
-    // Simulate assistant response
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `Generating image for: "${userMessage.content}"`,
-      }
-      setMessages((prev) => [...prev, assistantMessage])
-    }, 500)
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="border-b border-border px-6 py-4">
-        <h2 className="text-xl font-serif font-semibold">{albumName}</h2>
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="px-6 py-4">
+        <h2 className="text-2xl font-serif font-semibold">Juju</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            Start a conversation to generate images
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                  message.role === "user"
-                    ? "bg-foreground text-background"
-                    : "bg-muted text-foreground"
-                }`}
-              >
-                {message.content}
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-6 pb-4">
+        {messages.map((message, index) => (
+          <div key={message.id} className="mb-6">
+            {message.date && (
+              <p className="text-muted-foreground text-sm mb-4 text-center">{message.date}</p>
+            )}
+            
+            {message.attachments && message.attachments.length > 0 && (
+              <div className="flex justify-center mb-4">
+                {message.attachments.map((attachment) => (
+                  <div key={attachment.id} className="relative w-40 h-48 rounded-lg overflow-hidden">
+                    <Image
+                      src={attachment.url || "/placeholder.svg"}
+                      alt="Attachment"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
               </div>
-            </div>
-          ))
-        )}
+            )}
+
+            {message.role === "user" ? (
+              <div className="flex justify-center">
+                <div className="bg-muted rounded-2xl px-5 py-4 max-w-md">
+                  <p className="text-foreground font-medium leading-relaxed">{message.content}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-md">
+                <p className="text-foreground leading-relaxed">
+                  {message.content}
+                  {index === messages.length - 1 && message.role === "assistant" && (
+                    <button className="inline-flex items-center ml-1 text-muted-foreground hover:text-foreground">
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="border-t border-border p-4">
-        <div className="bg-muted rounded-xl p-4">
+      {/* Input */}
+      <div className="px-6 pb-6">
+        <div className="bg-muted rounded-2xl p-4">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Generate any image"
+            placeholder="Ask Juju"
             className="w-full bg-transparent text-lg outline-none placeholder:text-muted-foreground mb-3"
           />
           <div className="flex items-center justify-between">
@@ -99,14 +131,6 @@ export function Chat({ albumName, onGenerate }: ChatProps) {
               <span className="text-sm text-muted-foreground">Custom</span>
               <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
                 <RotateCcw className="h-5 w-5" />
-              </Button>
-              <Button 
-                onClick={handleSend}
-                size="icon" 
-                className="h-9 w-9 rounded-full"
-                disabled={!input.trim()}
-              >
-                <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>
