@@ -1,6 +1,7 @@
 import React from "react"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google'
+import { Toaster } from "sonner"
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
@@ -9,7 +10,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 const _playfair = Playfair_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Reve - AI Image Generation',
+  title: 'Juju - AI Image Generation',
   description: 'Reimagine reality with AI-powered image generation',
   generator: 'v0.app',
   icons: {
@@ -31,16 +32,26 @@ export const metadata: Metadata = {
   },
 }
 
+import { ThemeProvider } from "@/components/theme-provider"
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
-        {children}
-        <Analytics />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster position="top-center" />
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   )

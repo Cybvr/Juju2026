@@ -25,3 +25,10 @@ export interface User {
   plan: "free" | "pro" | "enterprise"
   createdAt: Date
 }
+export interface GalleryImage {
+  id: string
+  url: string
+  title: string
+  imageCount: number
+  timeAgo: string
+}

@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Search } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
@@ -44,7 +45,7 @@ export function Gallery({ images }: GalleryProps) {
             Inspiration
           </button>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
             <Search className="w-5 h-5" />
@@ -54,11 +55,15 @@ export function Gallery({ images }: GalleryProps) {
           </Button>
         </div>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto p-4">
         <div className="grid grid-cols-2 gap-4">
           {images.map((image) => (
-            <div key={image.id} className="group cursor-pointer">
+            <Link
+              key={image.id}
+              href={`/dashboard/albums/${image.id}`}
+              className="group cursor-pointer block"
+            >
               <div className="aspect-[4/5] rounded-lg overflow-hidden bg-secondary mb-2">
                 <Image
                   src={image.url || "/placeholder.svg"}
@@ -72,7 +77,7 @@ export function Gallery({ images }: GalleryProps) {
               <p className="text-xs text-muted-foreground">
                 {image.imageCount} images · {image.timeAgo}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

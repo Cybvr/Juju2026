@@ -7,8 +7,8 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-serif font-semibold">Reve</h1>
-          <Link href="/dashboard">
+          <h1 className="text-2xl font-serif font-semibold">Juju</h1>
+          <Link href="/auth/login">
             <Button variant="outline">Get Started</Button>
           </Link>
         </div>
@@ -24,7 +24,7 @@ export default function Home() {
               Transform your ideas into stunning visuals with AI-powered image generation.
               Create, organize, and refine your visual content effortlessly.
             </p>
-            <Link href="/dashboard">
+            <Link href="/auth/login">
               <Button size="lg" className="text-base px-8">
                 Start Creating
               </Button>
@@ -84,9 +84,9 @@ export default function Home() {
               Ready to bring your vision to life?
             </h3>
             <p className="text-muted-foreground mb-8 text-lg">
-              Join creators who are reimagining reality with Reve
+              Join creators who are reimagining reality with Juju
             </p>
-            <Link href="/dashboard">
+            <Link href="/auth/login">
               <Button size="lg" className="text-base px-8">
                 Start Creating for Free
               </Button>
@@ -99,7 +99,7 @@ export default function Home() {
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              &copy; 2026 Reve. All rights reserved.
+              &copy; 2026 Juju. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <a href="#" className="hover:text-foreground transition-colors">Privacy</a>

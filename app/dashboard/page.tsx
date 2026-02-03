@@ -1,47 +1,44 @@
 "use client"
 
-import { useState } from "react"
-import { Sidebar } from "@/app/common/sidebar"
-import { GeneratePanel } from "@/app/common/generate" // Fixed import for GeneratePanel
+import { GeneratePanel } from "@/app/common/generate"
 import { Gallery } from "@/app/common/gallery"
-import type { Album, GalleryImage } from "@/app/common/types"
-
-const initialAlbums: Album[] = [
-  { id: "1", name: "Blonde Boxer Reimagined", thumbnail: "/images/boxer-1.jpg" },
-  { id: "2", name: "Blonde Boxer", thumbnail: "/images/boxer-2.jpg" },
-  { id: "3", name: "Ace Boxer", thumbnail: "/images/boxer-3.jpg" },
-  { id: "4", name: "Boxing Gym Photoshoot", thumbnail: "/images/boxer-4.jpg" },
-  { id: "5", name: "Golden Gloves", thumbnail: "/images/boxer-1.jpg" },
-  { id: "6", name: "Lily's Boxing Journey", thumbnail: "/images/boxer-2.jpg" },
-  { id: "7", name: "Boxing Outfit Change", thumbnail: "/images/boxer-3.jpg" },
-  { id: "8", name: "Petr Yan", thumbnail: "/images/boxer-4.jpg" },
-  { id: "9", name: "Boxer Standing Photorealist...", thumbnail: "/images/boxer-1.jpg" },
-  { id: "10", name: "Similar Portrait", thumbnail: "/images/boxer-2.jpg" },
-]
-
-const mockImages: GalleryImage[] = [
-  { id: "1", url: "/images/boxer-1.jpg", title: "Blonde Boxer Reimagined", imageCount: 6, timeAgo: "16 hours ago" },
-  { id: "2", url: "/images/boxer-2.jpg", title: "Blonde Boxer", imageCount: 3, timeAgo: "16 hours ago" },
-  { id: "3", url: "/images/boxer-3.jpg", title: "Ace Boxer", imageCount: 4, timeAgo: "1 day ago" },
-  { id: "4", url: "/images/boxer-4.jpg", title: "Boxing Gym", imageCount: 8, timeAgo: "2 days ago" },
-]
+import { useEffect, useState } from "react"
+import { auth } from "@/lib/firebase"
+import { albumService } from "@/lib/services/albumService"
+import type { GalleryImage } from "@/app/common/types"
 
 export default function DashboardPage() {
-  const [albums, setAlbums] = useState<Album[]>(initialAlbums)
+  const [images, setImages] = useState<GalleryImage[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleNewAlbum = (album: Album) => {
-    setAlbums(prev => [album, ...prev])
+  useEffect(() => {
+    const fetchImages = async () => {
+      if (auth.currentUser) {
+        try {
+          const userImages = await albumService.getUserImages(auth.currentUser.uid)
+          setImages(userImages)
+        } catch (error) {
+          console.error("Error fetching images:", error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+    fetchImages()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-muted-foreground">Loading images...</p>
+      </div>
+    )
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar
-        albums={albums}
-        activeAlbumId={null}
-        onNewAlbum={handleNewAlbum}
-      />
+    <>
       <GeneratePanel />
-      <Gallery images={mockImages} />
-    </div>
+      <Gallery images={images} />
+    </>
   )
 }
