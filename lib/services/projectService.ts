@@ -16,12 +16,11 @@ import { db } from "@/lib/firebase"
 import type { Project, GalleryImage } from "@/app/common/types"
 
 export const projectService = {
-    // Create a new project
     async createProject(userId: string, name: string): Promise<string> {
         const docRef = await addDoc(collection(db, "projects"), {
             name,
             userId,
-            thumbnail: "/images/boxer-1.jpg", // Default thumbnail
+            thumbnail: "", // Empty thumbnail for new projects
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
         })
