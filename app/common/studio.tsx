@@ -109,7 +109,7 @@ export function Studio({ projectName, images }: StudioProps) {
     return () => window.clearInterval(playbackTimer)
   }, [isPlaying])
 
-  const currentImage = scenes[activeSceneIndex]?.url || "/images/juju.png"
+  const currentImage = scenes[activeSceneIndex]?.url || ""
 
   const saveToFirebase = async (newScenes: AlbumImage[]) => {
     if (!projectId) return

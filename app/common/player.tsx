@@ -61,13 +61,19 @@ function PlayerMedia({ imageUrl, aspectRatio, zoom, activeTool, onMediaClick }: 
               : "aspect-square h-full max-w-full"
         )}
       >
-        <Image
-          src={imageUrl}
-          alt="Scene Preview"
-          fill
-          className="object-contain opacity-90 transition-transform duration-200"
-          style={{ transform: `scale(${zoom / 100})` }}
-        />
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt="Scene Preview"
+            fill
+            className="object-contain opacity-90 transition-transform duration-200"
+            style={{ transform: `scale(${zoom / 100})` }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/50">
+            <span className="text-[10px] font-bold uppercase tracking-widest">Empty Timeline</span>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -187,12 +187,18 @@ export default function DashboardPage() {
               {/* Thumbnail Container */}
               <div className="relative aspect-[16/10] p-2 pb-0">
                 <div className="relative h-full w-full overflow-hidden rounded-xl bg-muted">
-                  <Image
-                    src={project.thumbnail || "/images/marketing/download-1.png"}
-                    alt={project.name}
-                    fill
-                    className="object-cover"
-                  />
+                  {project.thumbnail ? (
+                    <Image
+                      src={project.thumbnail}
+                      alt={project.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50 border-b border-border/50">
+                      <Video className="w-8 h-8 text-muted-foreground/20" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
 
