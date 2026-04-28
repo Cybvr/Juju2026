@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -25,6 +25,8 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { auth, storage } from "@/lib/firebase"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 
 interface AlbumImage {
   id: string
@@ -60,6 +62,38 @@ export function InspectorPanel({
   const sceneInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
   const captionInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'scene' | 'audio' | 'caption') => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    
+    const user = auth.currentUser
+    if (!user) {
+      toast.error("You must be logged in to upload media.")
+      return
+    }
+
+    setIsUploading(true)
+    const toastId = toast.loading(`Uploading ${type}...`)
+    try {
+      const fileRef = ref(storage, `users/${user.uid}/${Date.now()}_${file.name}`)
+      await uploadBytes(fileRef, file)
+      const url = await getDownloadURL(fileRef)
+      
+      toast.success(`Upload complete`, { id: toastId })
+      
+      if (type === 'scene') onAddScene(url)
+      else if (type === 'audio') onAddAudio(file.name)
+      else if (type === 'caption') onAddCaption(file.name)
+    } catch (error) {
+      console.error("Upload error:", error)
+      toast.error(`Upload failed`, { id: toastId })
+    } finally {
+      setIsUploading(false)
+      event.target.value = ''
+    }
+  }
 
   return (
     <div className="flex flex-col h-full w-[300px] border-l border-border bg-card">
@@ -392,9 +426,9 @@ export function InspectorPanel({
         </div>
       </Tabs>
 
-      <input type="file" ref={sceneInputRef} className="hidden" accept="image/*,video/*" />
-      <input type="file" ref={audioInputRef} className="hidden" accept="audio/*" />
-      <input type="file" ref={captionInputRef} className="hidden" accept=".srt,.txt,.vtt" />
+      <input type="file" ref={sceneInputRef} className="hidden" accept="image/*,video/*" onChange={(e) => handleFileUpload(e, 'scene')} disabled={isUploading} />
+      <input type="file" ref={audioInputRef} className="hidden" accept="audio/*" onChange={(e) => handleFileUpload(e, 'audio')} disabled={isUploading} />
+      <input type="file" ref={captionInputRef} className="hidden" accept=".srt,.txt,.vtt" onChange={(e) => handleFileUpload(e, 'caption')} disabled={isUploading} />
     </div>
   )
 }
