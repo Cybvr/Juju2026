@@ -1,4 +1,4 @@
-export interface Album {
+export interface Project {
   id: string
   name: string
   thumbnail: string
@@ -11,7 +11,7 @@ export interface ImageItem {
   id: string
   url: string
   title: string
-  albumId: string
+  projectId: string
   prompt: string
   userId: string
   createdAt: Date

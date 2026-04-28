@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Plus, Menu, LogOut, Settings, CreditCard, Sun, Moon, User as UserIcon } from "lucide-react"
+import { Home, Plus, Menu, LogOut, Settings, CreditCard, Sun, Moon, User as UserIcon, Sparkles, LayoutGrid } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
@@ -20,16 +20,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { collection, query, where, onSnapshot } from "firebase/firestore"
 
-import { albumService } from "@/lib/services/albumService"
+import { projectService } from "@/lib/services/projectService"
 
 interface SidebarProps {
-  albums: Album[]
-  activeAlbumId?: string | null
-  onNewAlbum?: () => void
+  projects: Project[]
+  activeProjectId?: string | null
+  onNewProject?: () => void
 }
 
-export function Sidebar({ albums, activeAlbumId, onNewAlbum }: SidebarProps) {
+export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -44,21 +46,8 @@ export function Sidebar({ albums, activeAlbumId, onNewAlbum }: SidebarProps) {
     return () => unsubscribe()
   }, [])
 
-  const handleNewAlbum = async () => {
-    if (!user || isCreating) return
-
-    setIsCreating(true)
-    try {
-      const albumId = await albumService.createAlbum(user.uid, "Untitled Album")
-      onNewAlbum?.()
-      router.push(`/dashboard/albums/${albumId}`)
-      toast.success("Album created")
-    } catch (error) {
-      console.error("Error creating album:", error)
-      toast.error("Failed to create album")
-    } finally {
-      setIsCreating(false)
-    }
+  const handleNewProject = () => {
+    router.push("/dashboard?new=true")
   }
 
   const handleLogout = async () => {
@@ -78,120 +67,166 @@ export function Sidebar({ albums, activeAlbumId, onNewAlbum }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "border-r border-border bg-background flex flex-col h-screen transition-all duration-300",
-        collapsed ? "w-16" : "w-80"
+        "border-r border-border bg-card/50 backdrop-blur-xl flex flex-col h-screen transition-all duration-500 ease-in-out z-20 relative",
+        collapsed ? "w-20" : "w-72"
       )}
     >
-      <div className="p-4 border-b border-border">
+      {/* Sidebar Header */}
+      <div className="p-6 flex items-center justify-between">
+        {!collapsed && (
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
+              <Image src="/images/juju.png" alt="Juju" width={20} height={20} className="w-5 h-5 object-contain" />
+            </div>
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Juju</span>
+          </Link>
+        )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 hover:bg-secondary rounded-lg transition-colors"
+          className={cn(
+            "p-2 hover:bg-secondary rounded-xl transition-all duration-300",
+            collapsed && "mx-auto"
+          )}
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-5 h-5 text-muted-foreground hover:text-foreground" />
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-2">
-        <Link
-          href="/dashboard"
+      {/* New Project Button */}
+      <div className="px-4 mb-6">
+        <Button
+          onClick={handleNewProject}
+          disabled={isCreating}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-            pathname === "/dashboard" ? "bg-secondary" : "hover:bg-secondary/50"
+            "w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all",
+            collapsed ? "px-0" : "px-4 gap-2"
           )}
         >
-          <Home className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span className="font-medium">Home</span>}
-        </Link>
+          <Plus className="w-5 h-5" />
+          {!collapsed && <span>New Video Project</span>}
+        </Button>
+      </div>
 
-        <button
-          onClick={handleNewAlbum}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors mt-1"
-        >
-          <Plus className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>New album</span>}
-        </button>
-
-        <div className="mt-2 space-y-1">
-          {albums.map((album) => (
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-4 space-y-8 custom-scrollbar">
+        {/* Main Links */}
+        <div>
+          {!collapsed && <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 px-3 mb-4">Production</p>}
+          <div className="space-y-1">
             <Link
-              key={album.id}
-              href={`/dashboard/albums/${album.id}`}
+              href="/dashboard"
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                activeAlbumId === album.id ? "bg-secondary" : "hover:bg-secondary/50"
+                "w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 group",
+                pathname === "/dashboard" 
+                  ? "bg-primary/10 text-primary" 
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
-              <div className="w-8 h-8 rounded overflow-hidden flex-shrink-0">
-                <Image
-                  src={album.thumbnail || "/images/juju.png"}
-                  alt={album.name}
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {!collapsed && <span className="truncate text-sm">{album.name}</span>}
+              <LayoutGrid className={cn("w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110", pathname === "/dashboard" && "text-primary")} />
+              {!collapsed && <span className="font-bold text-sm">Main Stage</span>}
             </Link>
-          ))}
+          </div>
         </div>
-      </nav>
 
-      <div className="p-4 border-t border-border">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 w-full hover:bg-secondary/50 p-2 rounded-lg transition-colors text-left outline-none">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium flex-shrink-0 overflow-hidden">
-                {user?.photoURL ? (
+        {/* Projects List */}
+        <div>
+          {!collapsed && (
+            <div className="flex items-center justify-between px-3 mb-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">My Videos</p>
+              <Sparkles className="w-3 h-3 text-primary animate-pulse" />
+            </div>
+          )}
+          <div className="space-y-1">
+            {projects.map((project) => (
+              <Link
+                key={project.id}
+                href={`/dashboard/projects/${project.id}`}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-300 group",
+                  activeProjectId === project.id 
+                    ? "bg-primary/10 text-primary border border-primary/20" 
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+              >
+                <div className={cn(
+                  "w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border border-border/50 group-hover:scale-110 transition-transform",
+                  activeProjectId === project.id && "border-primary/30"
+                )}>
                   <Image
-                    src={user.photoURL}
-                    alt={user.displayName || "User"}
+                    src={project.thumbnail || "/images/juju.png"}
+                    alt={project.name}
                     width={32}
                     height={32}
                     className="w-full h-full object-cover"
                   />
+                </div>
+                {!collapsed && <span className="truncate text-sm font-medium">{project.name}</span>}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* User Section */}
+      <div className="p-4 border-t border-border/50">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={cn(
+              "flex items-center gap-3 w-full hover:bg-secondary p-2 rounded-2xl transition-all duration-300 text-left outline-none group",
+              collapsed && "justify-center"
+            )}>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-sm font-bold flex-shrink-0 overflow-hidden border border-border/50 group-hover:border-primary/30 transition-colors">
+                {user?.photoURL ? (
+                  <Image
+                    src={user.photoURL}
+                    alt={user.displayName || "User"}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || "U"
+                  <span className="text-primary">{user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || "U"}</span>
                 )}
               </div>
               {!collapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{user?.displayName || "User"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                  <p className="font-bold text-sm truncate text-foreground">{user?.displayName || "User"}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground truncate uppercase tracking-tight">{user?.email}</p>
                 </div>
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" side="right" align="end" sideOffset={12}>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => router.push("/dashboard/account")}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+          <DropdownMenuContent className="w-64 p-2 rounded-2xl border-border/50 backdrop-blur-xl bg-background/90" side={collapsed ? "right" : "top"} align={collapsed ? "end" : "center"} sideOffset={12}>
+            <DropdownMenuLabel className="font-bold px-3 py-2 text-xs uppercase tracking-widest text-muted-foreground">Account Settings</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-border/50" />
+            <DropdownMenuGroup className="p-1">
+              <DropdownMenuItem onClick={() => router.push("/dashboard/account")} className="rounded-xl p-2.5 cursor-pointer">
+                <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Workspace Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.info("Billing is not yet implemented.")}>
-                <CreditCard className="mr-2 h-4 w-4" />
-                <span>Upgrade</span>
+              <DropdownMenuItem onClick={() => toast.info("Billing is not yet implemented.")} className="rounded-xl p-2.5 cursor-pointer">
+                <CreditCard className="mr-3 h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Billing & Plans</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={toggleTheme}>
+            <DropdownMenuSeparator className="bg-border/50" />
+            <DropdownMenuItem onClick={toggleTheme} className="rounded-xl p-2.5 cursor-pointer">
               {theme === "light" ? (
                 <>
-                  <Moon className="mr-2 h-4 w-4" />
-                  <span>Dark Mode</span>
+                  <Moon className="mr-3 h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Dark Mode</span>
                 </>
               ) : (
                 <>
-                  <Sun className="mr-2 h-4 w-4" />
-                  <span>Light Mode</span>
+                  <Sun className="mr-3 h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Light Mode</span>
                 </>
               )}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+            <DropdownMenuSeparator className="bg-border/50" />
+            <DropdownMenuItem onClick={handleLogout} className="rounded-xl p-2.5 cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <LogOut className="mr-3 h-4 w-4" />
+              <span className="font-bold">Sign Out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -13,12 +13,12 @@ import {
     Timestamp
 } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import type { Album, GalleryImage } from "@/app/common/types"
+import type { Project, GalleryImage } from "@/app/common/types"
 
-export const albumService = {
-    // Create a new album
-    async createAlbum(userId: string, name: string): Promise<string> {
-        const docRef = await addDoc(collection(db, "albums"), {
+export const projectService = {
+    // Create a new project
+    async createProject(userId: string, name: string): Promise<string> {
+        const docRef = await addDoc(collection(db, "projects"), {
             name,
             userId,
             thumbnail: "/images/boxer-1.jpg", // Default thumbnail
@@ -28,10 +28,10 @@ export const albumService = {
         return docRef.id
     },
 
-    // Get all albums for a user
-    async getUserAlbums(userId: string): Promise<Album[]> {
+    // Get all projects for a user
+    async getUserProjects(userId: string): Promise<Project[]> {
         const q = query(
-            collection(db, "albums"),
+            collection(db, "projects"),
             where("userId", "==", userId),
             orderBy("updatedAt", "desc")
         )
@@ -49,9 +49,9 @@ export const albumService = {
         })
     },
 
-    // Get a single album
-    async getAlbum(albumId: string): Promise<Album | null> {
-        const docRef = doc(db, "albums", albumId)
+    // Get a single project
+    async getProject(projectId: string): Promise<Project | null> {
+        const docRef = doc(db, "projects", projectId)
         const docSnap = await getDoc(docRef)
         if (docSnap.exists()) {
             const data = docSnap.data()
@@ -67,21 +67,21 @@ export const albumService = {
         return null
     },
 
-    // Update an album
-    async updateAlbum(albumId: string, data: Partial<Album>) {
-        const docRef = doc(db, "albums", albumId)
+    // Update a project
+    async updateProject(projectId: string, data: Partial<Project>) {
+        const docRef = doc(db, "projects", projectId)
         await updateDoc(docRef, {
             ...data,
             updatedAt: serverTimestamp(),
         })
     },
 
-    // Delete an album
-    async deleteAlbum(albumId: string) {
-        await deleteDoc(doc(db, "albums", albumId))
+    // Delete a project
+    async deleteProject(projectId: string) {
+        await deleteDoc(doc(db, "projects", projectId))
     },
 
-    // Get all images for a user
+    // Get all images/scenes for a user
     async getUserImages(userId: string): Promise<GalleryImage[]> {
         const q = query(
             collection(db, "images"),
@@ -95,17 +95,17 @@ export const albumService = {
                 id: doc.id,
                 url: data.url,
                 title: data.title || "Untitled",
-                imageCount: 1, // Individual image
+                imageCount: 1, // Individual scene
                 timeAgo: "Recently", // Simplification
             }
         })
     },
 
-    // Get images for a specific album
-    async getAlbumImages(albumId: string): Promise<GalleryImage[]> {
+    // Get scenes for a specific project
+    async getProjectImages(projectId: string): Promise<GalleryImage[]> {
         const q = query(
             collection(db, "images"),
-            where("albumId", "==", albumId),
+            where("projectId", "==", projectId),
             orderBy("createdAt", "desc")
         )
         const querySnapshot = await getDocs(q)

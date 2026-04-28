@@ -2,10 +2,10 @@
 
 import { useParams } from "next/navigation"
 import { Chat } from "@/app/common/chat"
-import { AlbumContent } from "@/app/common/album-content"
-import type { Album, GalleryImage } from "@/app/common/types"
+import { ProjectContent } from "@/app/common/project-content"
+import type { Project, GalleryImage } from "@/app/common/types"
 import { useEffect, useState } from "react"
-import { albumService } from "@/lib/services/albumService"
+import { projectService } from "@/lib/services/projectService"
 import { db } from "@/lib/firebase"
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
 import {
@@ -14,42 +14,42 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 
-export default function AlbumPage() {
+export default function ProjectPage() {
   const params = useParams()
-  const albumId = params.id as string
-  const [album, setAlbum] = useState<Album | null>(null)
-  const [images, setImages] = useState<GalleryImage[]>([])
+  const projectId = params.id as string
+  const [project, setProject] = useState<Project | null>(null)
+  const [scenes, setScenes] = useState<GalleryImage[]>([])
   const [isInitialLoading, setIsInitialLoading] = useState(true)
 
   useEffect(() => {
-    if (!albumId) return
+    if (!projectId) return
 
-    const fetchAlbum = async () => {
+    const fetchProject = async () => {
       try {
-        const data = await albumService.getAlbum(albumId)
-        setAlbum(data)
+        const data = await projectService.getProject(projectId)
+        setProject(data)
       } catch (e) {
         console.error(e)
       } finally {
         setIsInitialLoading(false)
       }
     }
-    fetchAlbum()
+    fetchProject()
 
-    // Real-time images listener
+    // Real-time scenes listener
     const q = query(
       collection(db, "images"),
-      where("albumId", "==", albumId),
+      where("projectId", "==", projectId),
       orderBy("createdAt", "desc")
     )
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const albumImages = snapshot.docs.map(doc => ({
+      const projectScenes = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as any[]
 
-      setImages(albumImages.map(img => ({
+      setScenes(projectScenes.map(img => ({
         id: img.id,
         url: img.url,
         title: img.title || "Untitled",
@@ -59,25 +59,23 @@ export default function AlbumPage() {
     })
 
     return () => unsubscribe()
-  }, [albumId])
+  }, [projectId])
 
-  // Instead of blocking with full-screen loading, we show the UI shell
-  // If album is not found but we are no longer loading, we can show a placeholder name
-  const albumName = album?.name || (isInitialLoading ? "Loading album..." : "Untitled Album")
+  const projectName = project?.name || (isInitialLoading ? "Loading project..." : "Untitled Video")
 
   return (
     <ResizablePanelGroup direction="horizontal" className="flex-1">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-        <Chat albumId={albumId} />
+        <Chat projectId={projectId} />
       </ResizablePanel>
 
       <ResizableHandle withHandle />
 
       <ResizablePanel defaultSize={70}>
-        <AlbumContent
-          albumId={albumId}
-          albumName={albumName}
-          images={images}
+        <ProjectContent
+          projectId={projectId}
+          projectName={projectName}
+          images={scenes}
         />
       </ResizablePanel>
     </ResizablePanelGroup>

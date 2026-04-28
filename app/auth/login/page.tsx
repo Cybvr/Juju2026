@@ -1,14 +1,13 @@
 "use client"
 
-import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { GalleryVerticalEnd, Loader2 } from "lucide-react"
+import { Loader2, PlayCircle, Sparkles, Wand2 } from "lucide-react"
 import { auth } from "@/lib/firebase"
 import {
     signInWithPopup,
     signInWithRedirect,
     GoogleAuthProvider,
-    GithubAuthProvider,
     getRedirectResult
 } from "firebase/auth"
 import { useRouter } from "next/navigation"
@@ -55,96 +54,98 @@ export default function LoginPage() {
         }
     }
 
-    const handleGithubLogin = async () => {
-        if (isLoading) return
-        setIsLoading(true)
-        const provider = new GithubAuthProvider()
-        try {
-            await signInWithPopup(auth, provider)
-            toast.success("Logged in with GitHub")
-            router.push("/dashboard")
-        } catch (error: any) {
-            console.error("GitHub login error:", error)
-            if (error.code === "auth/popup-blocked" || error.code === "auth/cancelled-popup-request") {
-                toast.info("Popups blocked. Trying redirect...")
-                await signInWithRedirect(auth, provider)
-            } else {
-                toast.error(error.message || "Failed to login with GitHub")
-            }
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
     return (
-        <div className="grid min-h-svh lg:grid-cols-2">
-            <div className="flex flex-col gap-4 p-6 md:p-10">
-                <div className="flex justify-center gap-2 md:justify-start">
-                    <Link href="/" className="flex items-center gap-2 font-medium">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                            <GalleryVerticalEnd className="size-4" />
-                        </div>
-                        <span className="text-xl font-serif font-semibold">Juju</span>
-                    </Link>
-                </div>
-                <div className="flex flex-1 items-center justify-center">
-                    <div className="w-full max-w-xs">
-                        <div className="flex flex-col gap-6">
-                            <div className="flex flex-col items-center gap-2 text-center">
-                                <h1 className="text-2xl font-bold">Welcome to Juju</h1>
-                                <p className="text-balance text-sm text-muted-foreground">
-                                    Login with your social account to continue
-                                </p>
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 font-sans">
+            <main className="relative min-h-screen overflow-hidden">
+                <section className="relative flex min-h-screen items-center overflow-hidden py-6">
+                    <div className="absolute left-1/2 top-1/2 -z-10 h-[420px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[140px]" />
+
+                    <div className="container mx-auto grid items-center gap-8 px-6 lg:grid-cols-[1fr_420px]">
+                        <div className="relative order-2 hidden min-h-[430px] lg:order-1 lg:block">
+                            <div className="absolute inset-x-0 top-0 flex justify-center gap-4 opacity-40 blur-[1px]">
+                                {["/images/marketing/download-1.png", "/images/marketing/download-2.png", "/images/marketing/download.png"].map((image, index) => (
+                                    <div
+                                        key={image}
+                                        className="relative h-64 w-44 overflow-hidden rounded-2xl border border-border/50 bg-card shadow-xl"
+                                        style={{ transform: `translateY(${index === 1 ? "24px" : "0"}) rotate(${index === 0 ? "-8deg" : index === 2 ? "8deg" : "0"})` }}
+                                    >
+                                        <Image src={image} alt="Juju video sample" fill className="object-cover" sizes="(min-width: 768px) 224px, 176px" />
+                                    </div>
+                                ))}
                             </div>
-                            <div className="grid grid-cols-1 gap-4">
-                                <Button
-                                    variant="outline"
-                                    className="w-full flex items-center justify-center gap-2 h-11"
-                                    onClick={handleGoogleLogin}
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="size-5 animate-spin" />
-                                    ) : (
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="size-5">
-                                            <path
-                                                fill="currentColor"
-                                                d="M12.48 10.92v3.28h7.84c-.24 1.84-.909 3.264-2.09 4.34-1.206 1.082-3.134 1.955-5.75 1.955-4.638 0-8.374-3.746-8.374-8.374s3.736-8.374 8.374-8.374c2.535 0 4.399.98 5.768 2.278l2.312-2.313C18.505 1.352 15.827 0 12.48 0 5.46 0 0 5.46 0 12.48S5.46 24.96 12.48 24.96c3.742 0 6.551-1.241 8.711-3.492 2.197-2.197 3.011-5.342 3.011-8.031 0-.693-.053-1.355-.152-2.015H12.48z"
-                                            />
-                                        </svg>
-                                    )}
-                                    {isLoading ? "Connecting..." : "Continue with Google"}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full flex items-center justify-center gap-2 h-11"
-                                    onClick={handleGithubLogin}
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="size-5 animate-spin" />
-                                    ) : (
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="size-5">
-                                            <path
-                                                fill="currentColor"
-                                                d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33c.85 0 1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"
-                                            />
-                                        </svg>
-                                    )}
-                                    {isLoading ? "Connecting..." : "Continue with GitHub"}
-                                </Button>
+
+                            <div className="relative mx-auto mt-12 aspect-video w-full max-w-2xl overflow-hidden rounded-[2rem] border-[6px] border-border/20 bg-card shadow-2xl">
+                                <Image src="/images/marketing/download.png" alt="Juju animation dashboard" fill priority className="object-cover opacity-90" sizes="(min-width: 1024px) 55vw, 90vw" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-background/45 to-transparent" />
+                                <div className="absolute left-5 top-5 flex items-center gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
+                                        <Image src="/images/juju.png" alt="Juju" width={24} height={24} className="h-6 w-6 object-contain" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="h-2 w-24 rounded-full bg-foreground/20" />
+                                        <div className="h-2 w-16 rounded-full bg-foreground/10" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="absolute bottom-4 left-8 z-20 w-80 rounded-[1.5rem] border border-border bg-background p-5 shadow-2xl">
+                                <p className="mb-4 text-lg font-bold leading-snug text-foreground">
+                                    Turn a script into a finished cartoon video
+                                </p>
+                                <div className="flex h-12 items-center justify-center gap-3 rounded-2xl bg-primary text-base font-black text-primary-foreground shadow-xl">
+                                    <Wand2 className="size-6" />
+                                    GENERATE
+                                </div>
+                            </div>
+
+                            <div className="absolute bottom-8 right-0 z-20 w-44 rotate-6 overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-2xl">
+                                <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+                                    <PlayCircle className="size-6 text-primary" />
+                                </div>
+                                <h2 className="mb-1 text-xl font-black tracking-tight">JUJU</h2>
+                                <p className="text-[10px] font-bold uppercase text-muted-foreground">AI Animation Suite</p>
+                            </div>
+                        </div>
+
+                        <div className="order-1 mx-auto w-full max-w-md lg:order-2">
+                            <div className="rounded-[2rem] border border-border bg-background p-5 shadow-2xl md:p-7">
+                                <div className="mb-6">
+                                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+                                        <Sparkles className="size-6 text-primary" />
+                                    </div>
+                                    <h1 className="mb-2 text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
+                                        Welcome to Juju
+                                    </h1>
+                                    <p className="text-sm font-medium leading-6 text-muted-foreground">
+                                        Sign in to create epic cartoon videos from your scripts.
+                                    </p>
+                                </div>
+
+                                <div className="grid gap-3">
+                                    <Button
+                                        variant="outline"
+                                        className="h-12 w-full rounded-2xl text-sm font-bold"
+                                        onClick={handleGoogleLogin}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? (
+                                            <Loader2 className="size-5 animate-spin" />
+                                        ) : (
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="size-5">
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M12.48 10.92v3.28h7.84c-.24 1.84-.909 3.264-2.09 4.34-1.206 1.082-3.134 1.955-5.75 1.955-4.638 0-8.374-3.746-8.374-8.374s3.736-8.374 8.374-8.374c2.535 0 4.399.98 5.768 2.278l2.312-2.313C18.505 1.352 15.827 0 12.48 0 5.46 0 0 5.46 0 12.48S5.46 24.96 12.48 24.96c3.742 0 6.551-1.241 8.711-3.492 2.197-2.197 3.011-5.342 3.011-8.031 0-.693-.053-1.355-.152-2.015H12.48z"
+                                                />
+                                            </svg>
+                                        )}
+                                        {isLoading ? "Connecting..." : "Continue with Google"}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div className="relative hidden bg-muted lg:block">
-                <img
-                    src="/images/boxer-1.jpg"
-                    alt="Login Background"
-                    className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-                />
-            </div>
+                </section>
+            </main>
         </div>
     )
 }

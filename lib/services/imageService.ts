@@ -2,7 +2,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 
 export const imageService = {
-    async generateImage(userId: string, albumId: string, prompt: string) {
+    async generateImage(userId: string, projectId: string, prompt: string) {
         // This is a placeholder for actual Replicate/Imagen API call
         // For now, we'll simulate a successful generation by adding a placeholder to Firestore
 
@@ -13,7 +13,7 @@ export const imageService = {
 
         const docRef = await addDoc(collection(db, "images"), {
             userId,
-            albumId,
+            projectId,
             prompt,
             url: "/images/boxer-1.jpg", // Simulated result
             title: prompt.substring(0, 20) + "...",
