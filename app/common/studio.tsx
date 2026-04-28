@@ -7,25 +7,30 @@ import { Player } from "@/app/common/player"
 import { Timeline } from "@/app/common/timeline"
 import { Button } from "@/components/ui/button"
 import {
-  ArrowLeft,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import {
+  Home,
   Download,
-  Layers,
-  Music,
-  Settings2,
   Share2,
-  SplitSquareHorizontal,
-  Type,
-  Volume2,
-  Send,
-  Plus
+  Plus,
+  Copy,
+  Trash2,
+  ChevronDown,
+  Cloud,
+  Check,
+  PanelRightClose,
 } from "lucide-react"
-import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { LeftPanel } from "@/app/common/left-panel"
 import { RightPanel } from "@/app/common/right-panel"
 import { db } from "@/lib/firebase"
 import { doc, updateDoc } from "firebase/firestore"
+import { cn } from "@/lib/utils"
 
 interface AlbumImage {
   id: string
@@ -50,7 +55,10 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
   const [leftTab, setLeftTab] = useState<"scenes" | "captions" | "transitions" | "audio">("scenes")
   const [activeTool, setActiveTool] = useState<string>("select")
-  
+
+  const [leftPanelVisible, setLeftPanelVisible] = useState(true)
+  const [rightPanelVisible, setRightPanelVisible] = useState(true)
+
   const dummySceneImage = "/images/boxer-1.jpg"
   const totalSeconds = 24
   const currentSeconds = Math.round((progress / 100) * totalSeconds)
@@ -160,8 +168,18 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     }
   }
 
+  const handleLeftTabChange = (tab: string) => {
+    if (tab === leftTab) {
+      setLeftPanelVisible((visible) => !visible)
+      return
+    }
+
+    setLeftTab(tab as typeof leftTab)
+    setLeftPanelVisible(true)
+  }
+
   const handleAddAudio = (trackName: string) => {
-    const nextScenes = allScenes.map((scene, i) => 
+    const nextScenes = allScenes.map((scene, i) =>
       i === activeSceneIndex ? { ...scene, hasAudio: true } : scene
     )
     setAllScenes(nextScenes)
@@ -170,7 +188,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
   }
 
   const handleAddCaption = (text: string) => {
-    const nextScenes = allScenes.map((scene, i) => 
+    const nextScenes = allScenes.map((scene, i) =>
       i === activeSceneIndex ? { ...scene, hasCaption: true } : scene
     )
     setAllScenes(nextScenes)
@@ -180,41 +198,91 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
-      <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-border bg-card px-5 py-2.5">
-        <div className="flex items-center gap-3">
+      <div className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-5 dark">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center pr-2">
+            <Image src="/images/juju.png" alt="Juju" width={28} height={28} className="h-7 w-7 object-contain" />
+          </div>
+
           <Link href="/dashboard" className="group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-              <ArrowLeft className="h-4 w-4" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors group-hover:bg-primary">
+              <Home className="h-4 w-4" />
             </div>
           </Link>
-          <h1 className="text-base font-black tracking-tight text-foreground">{projectName}</h1>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-9 gap-1 rounded-lg px-2 text-xs font-bold text-white hover:bg-white/10">
+                File
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem className="gap-2 font-bold">
+                <Plus className="h-4 w-4" />
+                New Project
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 font-bold">
+                <Copy className="h-4 w-4" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 font-bold text-destructive focus:text-destructive">
+                <Trash2 className="h-4 w-4" />
+                Move to Trash
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-medium tracking-tight text-white">{projectName}</h1>
+            <div className="flex items-center justify-center rounded-full bg-white/5 w-6 h-6 text-white/50">
+              <div className="relative">
+                <Cloud className="h-3 w-3" />
+                <Check className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-primary" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="h-8 gap-1.5 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:bg-secondary">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setRightPanelVisible((visible) => !visible)}
+            aria-label="Toggle inspector"
+            className="h-9 w-9 rounded-lg text-muted-foreground hover:bg-secondary"
+          >
+            <PanelRightClose className={cn("h-4 w-4 transition-transform", !rightPanelVisible && "rotate-180")} />
+          </Button>
+          <Button variant="ghost" className="h-9 gap-1.5 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:bg-secondary">
             <Share2 className="h-3.5 w-3.5" />
             Share
           </Button>
-          <Button className="h-8 gap-1.5 rounded-lg px-4 text-xs font-bold">
+          <Button className="h-9 gap-1.5 rounded-lg px-4 text-xs font-bold">
             <Download className="h-3.5 w-3.5" />
             Export
           </Button>
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <LeftPanel
-          scenes={scenes}
-          activeTab={leftTab}
-          onTabChange={(tab) => setLeftTab(tab as any)}
-          onGenerateScene={handleGenerateDummyScene}
-          onAddScene={handleAddScene}
-          onAddAudio={handleAddAudio}
-          onAddCaption={handleAddCaption}
-        />
+      <div className="flex min-h-0 flex-1 overflow-hidden p-2 gap-2">
+        <div className="flex shrink-0">
+          <LeftPanel
+            scenes={scenes}
+            activeTab={leftTab}
+            contentVisible={leftPanelVisible}
+            onTabChange={handleLeftTabChange}
+            onGenerateScene={handleGenerateDummyScene}
+            onAddScene={handleAddScene}
+            onAddAudio={handleAddAudio}
+            onAddCaption={handleAddCaption}
+            onClose={() => setLeftPanelVisible((visible) => !visible)}
+          />
+        </div>
 
-        <div className="relative flex min-w-0 flex-1 flex-col bg-muted/30">
-          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+        <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-muted/30 group">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden group">
             <Player
               imageUrl={currentImage}
               aspectRatio={aspectRatio}
@@ -239,10 +307,14 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
           />
         </div>
 
-        <RightPanel
-          projectName={projectName}
-          aspectRatio={aspectRatio}
-        />
+        {rightPanelVisible && (
+          <div className="flex shrink-0 animate-in slide-in-from-right duration-300">
+            <RightPanel
+              projectName={projectName}
+              aspectRatio={aspectRatio}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

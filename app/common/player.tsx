@@ -44,7 +44,7 @@ interface PlayerMediaProps {
 
 function PlayerMedia({ imageUrl, aspectRatio, zoom, activeTool, onMediaClick }: PlayerMediaProps) {
   return (
-    <div 
+    <div
       className={cn(
         "flex min-h-0 flex-1 items-center justify-center p-5",
         activeTool === "select" ? "cursor-crosshair" : "cursor-default"
@@ -53,7 +53,7 @@ function PlayerMedia({ imageUrl, aspectRatio, zoom, activeTool, onMediaClick }: 
     >
       <div
         className={cn(
-          "relative overflow-hidden bg-foreground",
+          "relative overflow-hidden bg-muted",
           aspectRatio === "landscape"
             ? "aspect-[16/9] w-full max-h-full"
             : aspectRatio === "portrait"
@@ -71,7 +71,6 @@ function PlayerMedia({ imageUrl, aspectRatio, zoom, activeTool, onMediaClick }: 
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/50">
-            <span className="text-[10px] font-bold uppercase tracking-widest">Empty Timeline</span>
           </div>
         )}
       </div>
@@ -91,7 +90,7 @@ function PlayerControls({
   onPlayingChange,
 }: PlayerControlsProps) {
   return (
-    <div className="grid shrink-0 grid-cols-3 items-center gap-3 border-t border-border bg-background px-3 py-2 shadow-lg">
+    <div className="grid shrink-0 grid-cols-3 items-center gap-3 border-t border-border bg-background px-3 py-1 shadow-lg">
       <div className="flex items-center gap-2 font-mono text-[11px] font-bold text-muted-foreground">
         <span className="text-foreground">{currentTime}</span>
         <span>/</span>
@@ -102,7 +101,7 @@ function PlayerControls({
       <div className="flex justify-center">
         <Button
           onClick={() => onPlayingChange(!isPlaying)}
-          className="h-10 w-10 rounded-lg bg-primary p-0 text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/90"
+          className="h-10 w-10 rounded-full bg-foreground p-0 text-primary-foreground  hover:bg-primary/90"
         >
           {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="ml-0.5 h-5 w-5 fill-current" />}
         </Button>
@@ -184,10 +183,10 @@ export function Player({
     <div
       className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-background transition-all duration-700"
     >
-      <PlayerMedia 
-        imageUrl={imageUrl} 
-        aspectRatio={aspectRatio} 
-        zoom={zoom} 
+      <PlayerMedia
+        imageUrl={imageUrl}
+        aspectRatio={aspectRatio}
+        zoom={zoom}
         activeTool={activeTool}
         onMediaClick={handleMediaClick}
       />
