@@ -4,6 +4,12 @@ import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Clock,
   Send,
   Film,
@@ -91,47 +97,60 @@ export function LeftPanel({
     )}>
       {/* Custom Vertical Navigation Sidebar */}
       <div className="w-[64px] shrink-0 bg-muted/5 flex flex-col py-4 items-center gap-2">
-        {[
-          { id: 'scenes', icon: Film, label: 'Scenes' },
-          { id: 'audio', icon: Music, label: 'Audio' },
-          { id: 'captions', icon: Type, label: 'Text' },
-          { id: 'transitions', icon: SplitSquareHorizontal, label: 'Effects' }
-        ].map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={cn(
-                "group relative flex h-16 w-14 flex-col items-center justify-center rounded-xl transition-all duration-300",
-                isActive
-                  ? "bg-card text-foreground"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              )}
-            >
-              <Icon className={cn(
-                "h-5 w-5 mb-1 transition-transform duration-300",
-                isActive ? "scale-110" : "group-hover:scale-110"
-              )} />
-              <span className={cn("text-[11px] font-medium tracking-tight leading-none", !isActive && "text-muted-foreground")}>
-                {tab.label}
-              </span>
+        <TooltipProvider delayDuration={250}>
+          {[
+            { id: 'scenes', icon: Film, label: 'Scenes' },
+            { id: 'audio', icon: Music, label: 'Audio' },
+            { id: 'captions', icon: Type, label: 'Text' },
+            { id: 'transitions', icon: SplitSquareHorizontal, label: 'Effects' }
+          ].map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
+              <Tooltip key={tab.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onTabChange(tab.id)}
+                    className={cn(
+                      "group relative flex h-16 w-14 flex-col items-center justify-center rounded-xl transition-all duration-300",
+                      isActive
+                        ? "bg-card text-foreground"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "h-5 w-5 mb-1.5 transition-transform duration-300",
+                      isActive ? "scale-110" : "group-hover:scale-110"
+                    )} />
+                    <span className={cn("text-[11px] font-medium tracking-tight leading-none", !isActive && "text-muted-foreground")}>
+                      {tab.label}
+                    </span>
 
-              {isActive && (
-                <div className="absolute -left-[1px] h-4 w-1 rounded-r-full bg-primary" />
-              )}
-            </button>
-          )
-        })}
+                    {isActive && (
+                      <div className="absolute -left-[1px] h-4 w-1 rounded-r-full bg-primary" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">{tab.label}</TooltipContent>
+              </Tooltip>
+            )
+          })}
+        </TooltipProvider>
         <div className="flex-1" />
         {onClose && (
-          <button
-            onClick={onClose}
-            className="flex h-16 w-16 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all mt-auto"
-          >
-            <PanelLeftClose className={cn("h-4 w-4 transition-transform", !contentVisible && "rotate-180")} />
-          </button>
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onClose}
+                  className="flex h-16 w-16 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all mt-auto"
+                >
+                  <PanelLeftClose className={cn("h-4 w-4 transition-transform", !contentVisible && "rotate-180")} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{contentVisible ? "Hide panel" : "Show panel"}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
       </div>
 

@@ -14,6 +14,12 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Home,
   Download,
   Share2,
@@ -200,34 +206,48 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
       <div className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-5 dark">
         <div className="flex items-center gap-2">
-          <div className="flex items-center pr-2">
-            <Image src="/images/juju.png" alt="Juju" width={28} height={28} className="h-7 w-7 object-contain" />
-          </div>
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center pr-2">
+                  <Image src="/images/juju.png" alt="Juju" width={28} height={28} className="h-7 w-7 object-contain" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Juju</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-          <Link href="/dashboard" className="group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors group-hover:bg-primary">
-              <Home className="h-4 w-4" />
-            </div>
-          </Link>
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/dashboard" className="group">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors group-hover:bg-primary">
+                    <Home className="h-4 w-4" />
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Dashboard</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-9 gap-1 rounded-lg px-2 text-xs font-bold text-white hover:bg-white/10">
+              <Button variant="ghost" className="h-9 gap-1 rounded-lg px-2 text-sm font-medium text-white hover:bg-white/10">
                 File
                 <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem className="gap-2 font-bold">
+              <DropdownMenuItem className="gap-2 text-sm font-medium">
                 <Plus className="h-4 w-4" />
                 New Project
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 font-bold">
+              <DropdownMenuItem className="gap-2 text-sm font-medium">
                 <Copy className="h-4 w-4" />
                 Duplicate
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 font-bold text-destructive focus:text-destructive">
+              <DropdownMenuItem className="gap-2 text-sm font-medium text-destructive focus:text-destructive">
                 <Trash2 className="h-4 w-4" />
                 Move to Trash
               </DropdownMenuItem>
@@ -236,30 +256,44 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-medium tracking-tight text-white">{projectName}</h1>
-            <div className="flex items-center justify-center rounded-full bg-white/5 w-6 h-6 text-white/50">
-              <div className="relative">
-                <Cloud className="h-3 w-3" />
-                <Check className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-primary" />
-              </div>
-            </div>
+            <TooltipProvider delayDuration={250}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-center rounded-full bg-white/5 w-6 h-6 text-white/50">
+                    <div className="relative">
+                      <Cloud className="h-3 w-3" />
+                      <Check className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-primary" />
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Saved</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setRightPanelVisible((visible) => !visible)}
-            aria-label="Toggle inspector"
-            className="h-9 w-9 rounded-lg text-muted-foreground hover:bg-secondary"
-          >
-            <PanelRightClose className={cn("h-4 w-4 transition-transform", !rightPanelVisible && "rotate-180")} />
-          </Button>
-          <Button variant="ghost" className="h-9 gap-1.5 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:bg-secondary">
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setRightPanelVisible((visible) => !visible)}
+                  aria-label="Toggle inspector"
+                  className="h-9 w-9 rounded-lg text-muted-foreground hover:bg-secondary"
+                >
+                  <PanelRightClose className={cn("h-4 w-4 transition-transform", !rightPanelVisible && "rotate-180")} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{rightPanelVisible ? "Hide inspector" : "Show inspector"}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button variant="ghost" className="h-9 gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-secondary">
             <Share2 className="h-3.5 w-3.5" />
             Share
           </Button>
-          <Button className="h-9 gap-1.5 rounded-lg px-4 text-xs font-bold">
+          <Button className="h-9 gap-1.5 rounded-lg px-4 text-sm font-medium">
             <Download className="h-3.5 w-3.5" />
             Export
           </Button>
