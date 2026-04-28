@@ -186,21 +186,7 @@ export function InspectorPanel({
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {[
-                  "/images/boxer-1.jpg",
-                  "/images/juju.png",
-                  "/images/boxer-1.jpg",
-                  "/images/juju.png",
-                ].map((img, i) => (
-                  <div key={i} className="relative aspect-square group rounded-lg overflow-hidden border border-border/50 bg-muted cursor-pointer">
-                    <Image src={img} alt="Generated scene" fill className="object-cover transition-transform group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button size="icon" className="h-7 w-7 rounded-full bg-primary" onClick={() => onAddScene(img)}>
-                        <Plus className="w-4 h-4 text-white" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                {/* Generated scenes will go here */}
               </div>
             </div>
 
@@ -231,21 +217,7 @@ export function InspectorPanel({
               </div>
 
               <div className="grid grid-cols-4 gap-2">
-                {[
-                  "/images/juju.png",
-                  "/images/boxer-1.jpg",
-                  "/images/juju.png",
-                  "/images/boxer-1.jpg",
-                ].map((img, i) => (
-                  <div key={i} className="relative aspect-square group rounded-md overflow-hidden border border-border/50 bg-muted/40 cursor-pointer">
-                    <Image src={img} alt="History scene" fill className="object-cover grayscale hover:grayscale-0 transition-all" />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button size="icon" className="h-7 w-7 rounded-full bg-primary" onClick={(e) => { e.stopPropagation(); onAddScene(img); }}>
-                        <Plus className="w-4 h-4 text-white" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                {/* Uploaded/All scenes will go here */}
               </div>
             </div>
           </TabsContent>
@@ -273,20 +245,7 @@ export function InspectorPanel({
                 </div>
               </div>
               <div className="space-y-2">
-                {[
-                  { title: "Synthwave Dreams", duration: "0:30" },
-                  { title: "Lofi Study Beats", duration: "0:45" },
-                ].map((track, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-border/50 bg-muted/40 group hover:border-primary/50 transition-colors">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-foreground">{track.title}</span>
-                      <span className="text-[10px] text-muted-foreground">{track.duration}</span>
-                    </div>
-                    <Button size="icon" variant="ghost" className="h-6 w-6 rounded-md hover:bg-primary hover:text-white" onClick={() => onAddAudio(track.title)}>
-                      <Plus className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                ))}
+                {/* Generated tracks will go here */}
               </div>
             </div>
 
@@ -313,17 +272,7 @@ export function InspectorPanel({
               </div>
 
               <div className="space-y-2">
-                {[
-                  "Upbeat pop instrumental...",
-                  "Dark orchestral tension...",
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-border/50 bg-muted/20 text-xs font-medium text-muted-foreground group hover:border-primary/30 transition-colors">
-                    <span className="truncate pr-4">{item}</span>
-                    <Button size="icon" variant="ghost" className="h-6 w-6 rounded-md hover:bg-primary hover:text-white opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onAddAudio(item)}>
-                      <Plus className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                ))}
+                {/* Uploaded/All tracks will go here */}
               </div>
             </div>
           </TabsContent>
@@ -351,17 +300,7 @@ export function InspectorPanel({
                   </div>
                 </div>
                 <div className="space-y-2">
-                  {[
-                    "A world of endless possibilities...",
-                    "Crafted with precision and care.",
-                  ].map((text, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-border/50 bg-muted/40 group hover:border-primary/50 transition-colors">
-                      <span className="text-xs font-medium text-foreground truncate flex-1 pr-4">{text}</span>
-                      <Button size="icon" variant="ghost" className="h-6 w-6 rounded-md hover:bg-primary hover:text-white" onClick={() => onAddCaption(text)}>
-                        <Plus className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  ))}
+                  {/* Generated captions will go here */}
                 </div>
               </div>
 
@@ -388,17 +327,7 @@ export function InspectorPanel({
                 </div>
 
                 <div className="space-y-2">
-                  {[
-                    "Short punchy taglines...",
-                    "Narrative subtitles...",
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-border/50 bg-muted/20 text-xs font-medium text-muted-foreground group hover:border-primary/30 transition-colors">
-                      <span className="truncate pr-4">{item}</span>
-                      <Button size="icon" variant="ghost" className="h-6 w-6 rounded-md hover:bg-primary hover:text-white opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onAddCaption(item)}>
-                        <Plus className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  ))}
+                  {/* Uploaded/All captions will go here */}
                 </div>
               </div>
           </TabsContent>
