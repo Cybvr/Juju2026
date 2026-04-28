@@ -115,54 +115,8 @@ export function Timeline({
         </div>
       </div>
 
-      <div className="grid grid-cols-[13rem_1fr]">
-        {/* Left Side: Fixed Controls */}
-        <div className="border-r border-b border-border">
-          <div className="h-8 border-b border-border bg-muted/30" />
-          
-          <div className="flex h-[4.5rem] items-center gap-4 border-b border-border px-3">
-            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 rounded-md text-muted-foreground hover:bg-secondary">
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 rounded-md text-muted-foreground hover:bg-secondary">
-              <Lock className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 rounded-md text-muted-foreground hover:bg-secondary">
-              <Volume2 className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" className="ml-auto h-7 w-7 rounded-md text-muted-foreground hover:bg-secondary">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex h-8 items-center gap-3 border-b border-border bg-muted/10 px-3">
-            <Button type="button" variant="ghost" size="icon" className="h-6 w-6 rounded-md text-muted-foreground hover:bg-secondary">
-              <Type className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" className="h-6 w-6 rounded-md text-muted-foreground hover:bg-secondary">
-              <Lock className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" className="ml-auto h-6 w-6 rounded-md text-muted-foreground hover:bg-secondary">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex h-7 items-center gap-3 bg-muted/20 px-3">
-            <Button type="button" variant="ghost" size="icon" className="h-5 w-5 rounded-md text-muted-foreground hover:bg-secondary">
-              <Volume2 className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" className="h-5 w-5 rounded-md text-muted-foreground hover:bg-secondary">
-              <Lock className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" className="ml-auto h-5 w-5 rounded-md text-muted-foreground hover:bg-secondary">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Right Side: Scrollable Timeline */}
-        <div className="relative overflow-x-auto border-b border-border custom-scrollbar p-4">
-          <div className="relative" style={{ width: tracksWidth }}>
+      <div className="relative overflow-x-auto border-b border-border custom-scrollbar p-4">
+        <div className="relative" style={{ width: tracksWidth }}>
             <div
               className="pointer-events-none absolute -bottom-4 -top-4 z-30 w-px bg-primary"
               style={{ left: `${progress}%` }}
