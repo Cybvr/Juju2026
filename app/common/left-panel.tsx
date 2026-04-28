@@ -14,14 +14,6 @@ import {
   Clock,
   Plus,
   Send,
-  Settings2,
-  Layers,
-  Music,
-  Type,
-  SplitSquareHorizontal,
-  History,
-  RefreshCcw,
-  Upload
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -36,10 +28,8 @@ interface AlbumImage {
   hasCaption?: boolean
 }
 
-interface InspectorPanelProps {
-  projectName: string
+interface LeftPanelProps {
   scenes: AlbumImage[]
-  aspectRatio: "landscape" | "portrait" | "square"
   activeTab: string
   onTabChange: (tab: string) => void
   onGenerateScene: () => void
@@ -48,17 +38,15 @@ interface InspectorPanelProps {
   onAddCaption: (text: string) => void
 }
 
-export function InspectorPanel({
-  projectName,
+export function LeftPanel({
   scenes,
-  aspectRatio,
   activeTab,
   onTabChange,
   onGenerateScene,
   onAddScene,
   onAddAudio,
   onAddCaption,
-}: InspectorPanelProps) {
+}: LeftPanelProps) {
   const sceneInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
   const captionInputRef = useRef<HTMLInputElement>(null)
@@ -96,16 +84,10 @@ export function InspectorPanel({
   }
 
   return (
-    <div className="flex flex-col h-full w-[300px] border-l border-border bg-card">
+    <div className="flex flex-col h-full w-[300px] border-r border-border bg-card">
       <Tabs value={activeTab} onValueChange={onTabChange} className="flex flex-col h-full">
         <div className="border-b border-border bg-muted/20">
           <TabsList className="w-full h-12 bg-transparent rounded-none p-0">
-            <TabsTrigger
-              value="properties"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent transition-all"
-            >
-              <Settings2 className="w-4 h-4" />
-            </TabsTrigger>
             <TabsTrigger
               value="scenes"
               className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent transition-all"
@@ -134,34 +116,6 @@ export function InspectorPanel({
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <TabsContent value="properties" className="m-0 p-4 space-y-6">
-            <div className="space-y-2.5">
-              <span className="text-xs font-bold text-muted-foreground">Project Detail</span>
-              <div className="border border-border bg-background px-3 py-2 text-sm font-bold text-foreground truncate rounded-lg">
-                {projectName}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <span className="text-xs font-bold text-muted-foreground">Metadata</span>
-              <div className="space-y-2.5 border border-border bg-muted/40 p-3 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-muted-foreground">Length</span>
-                  <span className="text-xs font-bold text-foreground">0:24s</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-muted-foreground">Format</span>
-                  <span className="text-xs font-bold text-foreground">4K / 30FPS</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-muted-foreground">Aspect</span>
-                  <span className="text-xs font-bold text-foreground">
-                    {aspectRatio === "landscape" ? "16:9" : aspectRatio === "portrait" ? "9:16" : "1:1"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
 
           <TabsContent value="scenes" className="m-0 p-4 space-y-6">
             <div className="space-y-2.5">

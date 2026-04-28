@@ -22,7 +22,8 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { InspectorPanel } from "@/app/common/inspector-panel"
+import { LeftPanel } from "@/app/common/left-panel"
+import { RightPanel } from "@/app/common/right-panel"
 import { db } from "@/lib/firebase"
 import { doc, updateDoc } from "firebase/firestore"
 
@@ -40,14 +41,14 @@ interface StudioProps {
   images: AlbumImage[]
 }
 
-export function Studio({ projectName, images }: StudioProps) {
+export function Studio({ projectId, projectName, images }: StudioProps) {
   const [allScenes, setAllScenes] = useState<AlbumImage[]>(images)
   const scenes = allScenes
   const [aspectRatio, setAspectRatio] = useState<"landscape" | "portrait" | "square">("landscape")
   const [isPlaying, setIsPlaying] = useState(false)
   const [progress, setProgress] = useState(35)
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
-  const [inspectorTab, setInspectorTab] = useState<"properties" | "scenes" | "captions" | "transitions" | "audio" | null>("scenes")
+  const [leftTab, setLeftTab] = useState<"scenes" | "captions" | "transitions" | "audio">("scenes")
   const [activeTool, setActiveTool] = useState<string>("select")
   
   const dummySceneImage = "/images/boxer-1.jpg"
@@ -202,6 +203,16 @@ export function Studio({ projectName, images }: StudioProps) {
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
+        <LeftPanel
+          scenes={scenes}
+          activeTab={leftTab}
+          onTabChange={(tab) => setLeftTab(tab as any)}
+          onGenerateScene={handleGenerateDummyScene}
+          onAddScene={handleAddScene}
+          onAddAudio={handleAddAudio}
+          onAddCaption={handleAddCaption}
+        />
+
         <div className="relative flex min-w-0 flex-1 flex-col bg-muted/30">
           <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
             <Player
@@ -228,16 +239,9 @@ export function Studio({ projectName, images }: StudioProps) {
           />
         </div>
 
-        <InspectorPanel
+        <RightPanel
           projectName={projectName}
-          scenes={scenes}
           aspectRatio={aspectRatio}
-          activeTab={inspectorTab || "scenes"}
-          onTabChange={(tab) => setInspectorTab(tab as any)}
-          onGenerateScene={handleGenerateDummyScene}
-          onAddScene={handleAddScene}
-          onAddAudio={handleAddAudio}
-          onAddCaption={handleAddCaption}
         />
       </div>
     </div>
