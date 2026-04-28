@@ -56,6 +56,10 @@ export function Studio({ projectName, images }: StudioProps) {
   const remainingSeconds = Math.max(totalSeconds - currentSeconds, 0)
 
   useEffect(() => {
+    setAllScenes(images)
+  }, [images])
+
+  useEffect(() => {
     if (scenes.length > 0) {
       const calculatedIndex = Math.min(
         Math.floor((progress / 100) * scenes.length),

@@ -7,7 +7,7 @@ import type { Project, GalleryImage } from "@/app/common/types"
 import { useEffect, useState } from "react"
 import { projectService } from "@/lib/services/projectService"
 import { db, auth } from "@/lib/firebase"
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
+import { collection, query, where, orderBy, onSnapshot, doc } from "firebase/firestore"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -24,41 +24,21 @@ export default function ProjectPage() {
   useEffect(() => {
     if (!projectId) return
 
-    const fetchProject = async () => {
-      try {
-        const data = await projectService.getProject(projectId)
+    const unsubscribe = onSnapshot(doc(db, "projects", projectId), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as Project & { scenes?: any[] }
         setProject(data)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setIsInitialLoading(false)
+        
+        const projectScenes = data.scenes || []
+        setScenes(projectScenes.map((img: any) => ({
+          id: img.id,
+          url: img.url,
+          title: img.title || "Untitled",
+          hasAudio: img.hasAudio || false,
+          hasCaption: img.hasCaption || false
+        })))
       }
-    }
-    fetchProject()
-
-    // Real-time scenes listener
-    if (!auth.currentUser) return
-
-    const q = query(
-      collection(db, "images"),
-      where("projectId", "==", projectId),
-      where("userId", "==", auth.currentUser.uid),
-      orderBy("createdAt", "desc")
-    )
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const projectScenes = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as any[]
-
-      setScenes(projectScenes.map(img => ({
-        id: img.id,
-        url: img.url,
-        title: img.title || "Untitled",
-        imageCount: 1,
-        timeAgo: "Recently"
-      })))
+      setIsInitialLoading(false)
     })
 
     return () => unsubscribe()
