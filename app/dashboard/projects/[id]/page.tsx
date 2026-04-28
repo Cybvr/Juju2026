@@ -6,7 +6,7 @@ import { ProjectContent } from "@/app/common/project-content"
 import type { Project, GalleryImage } from "@/app/common/types"
 import { useEffect, useState } from "react"
 import { projectService } from "@/lib/services/projectService"
-import { db } from "@/lib/firebase"
+import { db, auth } from "@/lib/firebase"
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
 import {
   ResizableHandle,
@@ -37,9 +37,12 @@ export default function ProjectPage() {
     fetchProject()
 
     // Real-time scenes listener
+    if (!auth.currentUser) return
+
     const q = query(
       collection(db, "images"),
       where("projectId", "==", projectId),
+      where("userId", "==", auth.currentUser.uid),
       orderBy("createdAt", "desc")
     )
 
@@ -64,20 +67,10 @@ export default function ProjectPage() {
   const projectName = project?.name || (isInitialLoading ? "Loading project..." : "Untitled Video")
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="flex-1">
-      <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-        <Chat projectId={projectId} />
-      </ResizablePanel>
-
-      <ResizableHandle withHandle />
-
-      <ResizablePanel defaultSize={70}>
-        <ProjectContent
-          projectId={projectId}
-          projectName={projectName}
-          images={scenes}
-        />
-      </ResizablePanel>
-    </ResizablePanelGroup>
+    <ProjectContent
+      projectId={projectId}
+      projectName={projectName}
+      images={scenes}
+    />
   )
 }

@@ -28,6 +28,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -133,7 +134,7 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
           <div className="relative w-full max-w-md group">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <input 
+            <Input 
               type="text" 
               placeholder="Search projects..." 
               value={searchQuery}
@@ -198,12 +199,12 @@ export default function DashboardPage() {
                     {project.name}
                   </h3>
                   <div className="flex items-center gap-1">
-                    <button className="p-2 hover:bg-secondary rounded-xl transition-all">
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:bg-secondary">
                       <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                    <button className="p-2 hover:bg-secondary rounded-xl transition-all">
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:bg-secondary">
                       <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -265,10 +266,7 @@ export default function DashboardPage() {
 
       <Dialog open={showNewProjectModal} onOpenChange={setShowNewProjectModal}>
         <DialogContent className="flex max-h-[calc(100dvh-1.5rem)] flex-col gap-0 overflow-hidden rounded-3xl border-border/50 p-0 shadow-2xl sm:w-[calc(100%-2rem)] sm:max-w-lg">
-          <DialogHeader className="items-center px-5 pb-4 pt-6 text-center sm:px-7 sm:pb-5 sm:pt-8">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20 sm:mb-4 sm:h-14 sm:w-14 sm:rounded-3xl">
-              <Sparkles className="h-6 w-6 text-primary-foreground sm:h-7 sm:w-7" />
-            </div>
+          <DialogHeader className="items-center px-5 pb-4 pt-6 text-center sm:px-7 sm:pb-5 sm:pt-7">
             <DialogTitle className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
               Create New Project
             </DialogTitle>
@@ -281,18 +279,18 @@ export default function DashboardPage() {
             <div className="space-y-5 sm:space-y-6">
               {/* Creation Mode */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <button 
+                <Button 
+                  type="button"
+                  variant="outline"
                   onClick={() => setSelectedMode("guide")}
                   className={cn(
-                    "relative flex min-h-[132px] flex-col items-center justify-center gap-3 rounded-2xl border-2 p-4 text-left transition-all group sm:min-h-[156px] sm:rounded-3xl sm:p-6",
+                    "relative h-auto min-h-[116px] flex-col items-center justify-center gap-2 whitespace-normal rounded-xl border p-4 text-left shadow-none transition-all group sm:min-h-[132px] sm:p-5",
                     selectedMode === "guide" 
-                      ? "border-primary bg-primary/5 shadow-lg shadow-primary/5" 
-                      : "border-border hover:border-primary/30 hover:bg-muted/50"
+                      ? "border-primary bg-primary/5" 
+                      : "border-border bg-background hover:border-primary/30 hover:bg-muted/50"
                   )}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground transition-colors group-hover:text-primary sm:h-12 sm:w-12">
-                    <Wand2 className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </div>
+                  <Wand2 className={cn("h-5 w-5", selectedMode === "guide" ? "text-primary" : "text-muted-foreground")} />
                   <div className="text-center">
                     <p className="font-bold text-foreground">JujuGuide</p>
                     <p className="text-[10px] font-medium leading-tight text-muted-foreground">AI-powered creation</p>
@@ -302,20 +300,20 @@ export default function DashboardPage() {
                       <CheckCircle2 className="w-3 h-3 fill-current" />
                     </div>
                   )}
-                </button>
+                </Button>
 
-                <button 
+                <Button 
+                  type="button"
+                  variant="outline"
                   onClick={() => setSelectedMode("studio")}
                   className={cn(
-                    "relative flex min-h-[132px] flex-col items-center justify-center gap-3 rounded-2xl border-2 p-4 text-left transition-all group sm:min-h-[156px] sm:rounded-3xl sm:p-6",
+                    "relative h-auto min-h-[116px] flex-col items-center justify-center gap-2 whitespace-normal rounded-xl border p-4 text-left shadow-none transition-all group sm:min-h-[132px] sm:p-5",
                     selectedMode === "studio" 
-                      ? "border-primary bg-primary/5 shadow-lg shadow-primary/5" 
-                      : "border-border hover:border-primary/30 hover:bg-muted/50"
+                      ? "border-primary bg-primary/5" 
+                      : "border-border bg-background hover:border-primary/30 hover:bg-muted/50"
                   )}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground transition-colors group-hover:text-primary sm:h-12 sm:w-12">
-                    <Video className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </div>
+                  <Video className={cn("h-5 w-5", selectedMode === "studio" ? "text-primary" : "text-muted-foreground")} />
                   <div className="text-center">
                     <p className="font-bold text-foreground">JujuStudio</p>
                     <p className="text-[10px] font-medium leading-tight text-muted-foreground">Full manual control</p>
@@ -325,7 +323,7 @@ export default function DashboardPage() {
                       <CheckCircle2 className="w-3 h-3 fill-current" />
                     </div>
                   )}
-                </button>
+                </Button>
               </div>
 
               {/* Video Format */}
@@ -337,21 +335,23 @@ export default function DashboardPage() {
                     { id: "portrait", label: "Portrait", icon: Smartphone },
                     { id: "square", label: "Square", icon: Square },
                   ].map((format) => (
-                    <button
+                    <Button
+                      type="button"
+                      variant="outline"
                       key={format.id}
                       onClick={() => setSelectedFormat(format.id as any)}
                       className={cn(
-                        "flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border-2 p-3 transition-all sm:p-4",
+                        "h-auto min-h-16 flex-col items-center justify-center gap-1.5 whitespace-normal rounded-xl border p-3 shadow-none transition-all sm:min-h-20 sm:p-4",
                         selectedFormat === format.id 
-                          ? "border-primary bg-primary/5 shadow-sm" 
-                          : "border-border hover:border-primary/20"
+                          ? "border-primary bg-primary/5" 
+                          : "border-border bg-background hover:border-primary/20"
                       )}
                     >
                       <format.icon className={cn("w-5 h-5", selectedFormat === format.id ? "text-primary" : "text-muted-foreground")} />
                       <span className={cn("text-[10px] font-bold uppercase tracking-tight", selectedFormat === format.id ? "text-primary" : "text-muted-foreground")}>
                         {format.label}
                       </span>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -359,7 +359,7 @@ export default function DashboardPage() {
               {/* Project Name */}
               <div className="space-y-3">
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">Project Name</p>
-                <input 
+                <Input 
                   type="text"
                   placeholder="e.g. Royale with cheese"
                   value={projectName}

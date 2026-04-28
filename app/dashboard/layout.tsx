@@ -6,6 +6,7 @@ import type { Project } from "@/app/common/types"
 import { auth } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { projectService } from "@/lib/services/projectService"
+import { usePathname } from "next/navigation"
 
 export default function DashboardLayout({
     children,
@@ -14,6 +15,9 @@ export default function DashboardLayout({
 }) {
     const [projects, setProjects] = useState<Project[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const pathname = usePathname()
+
+    const isProjectPage = pathname.startsWith("/dashboard/projects/") && pathname !== "/dashboard/projects"
 
     const fetchProjects = async (uid: string) => {
         try {
@@ -50,11 +54,13 @@ export default function DashboardLayout({
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
             
-            <Sidebar
-                projects={projects}
-                activeProjectId={null}
-                onNewProject={handleRefreshProjects}
-            />
+            {!isProjectPage && (
+                <Sidebar
+                    projects={projects}
+                    activeProjectId={null}
+                    onNewProject={handleRefreshProjects}
+                />
+            )}
             <main className="flex-1 flex overflow-hidden relative">
                 {isLoading ? (
                     <div className="flex-1 flex items-center justify-center">

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Paperclip, AtSign, Slash, RotateCcw, ChevronDown, Loader2, Send, Sparkles, Wand2 } from "lucide-react"
+import { Paperclip, AtSign, Slash, RotateCcw, ChevronDown, Loader2, Send, Sparkles, Wand2, Play } from "lucide-react"
 import { chatService } from "@/lib/services/geminiService"
 import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase"
@@ -35,13 +35,13 @@ export function Chat({ projectId, onGenerate }: ChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
-    if (!projectId) return
+    if (!auth.currentUser) return
 
     setIsMessagesLoading(true)
     const q = query(
       collection(db, "messages"),
       where("projectId", "==", projectId),
+      where("userId", "==", auth.currentUser.uid),
       orderBy("createdAt", "asc")
     )
 
