@@ -115,26 +115,6 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-4 space-y-8 custom-scrollbar">
         {/* Main Links */}
-        <div>
-          {!collapsed && <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 px-3 mb-4">Production</p>}
-          <div className="space-y-1">
-            <Button
-              asChild
-              variant="ghost"
-              className={cn(
-                "h-auto w-full justify-start gap-3 rounded-2xl px-3 py-3 text-muted-foreground transition-all duration-300 group hover:bg-secondary hover:text-foreground",
-                pathname === "/dashboard" 
-                  ? "bg-primary/10 text-primary" 
-                  : "text-muted-foreground"
-              )}
-            >
-              <Link href="/dashboard">
-                <LayoutGrid className={cn("w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110", pathname === "/dashboard" && "text-primary")} />
-                {!collapsed && <span className="font-bold text-sm">Main Stage</span>}
-              </Link>
-            </Button>
-          </div>
-        </div>
 
         {/* Projects List */}
         <div>
@@ -152,8 +132,8 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
                 key={project.id}
                 className={cn(
                   "h-auto w-full justify-start gap-3 rounded-2xl px-3 py-2.5 text-muted-foreground transition-all duration-300 group hover:bg-secondary hover:text-foreground",
-                  activeProjectId === project.id 
-                    ? "bg-primary/10 text-primary border border-primary/20" 
+                  activeProjectId === project.id
+                    ? "bg-primary/10 text-primary border border-primary/20"
                     : "text-muted-foreground"
                 )}
               >

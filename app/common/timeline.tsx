@@ -60,9 +60,7 @@ export function Timeline({
     { id: "select", label: "Select", icon: MousePointer },
     { id: "undo", label: "Undo", icon: RotateCcw },
     { id: "redo", label: "Redo", icon: RotateCw },
-    { id: "split", label: "Split", icon: SplitSquareHorizontal },
     { id: "delete", label: "Delete", icon: Trash2 },
-    { id: "cut", label: "Cut", icon: Scissors },
   ]
 
   const tracksWidth = scenes.length > 0 ? scenes.length * timelineZoom : 800

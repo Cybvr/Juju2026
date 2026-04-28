@@ -185,8 +185,8 @@ export function InspectorPanel({
                   <span className="text-xs font-bold text-muted-foreground">Generated Scenes</span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {/* Generated scenes will go here */}
+              <div className="grid grid-cols-2 gap-2 empty:hidden">
+                <p className="col-span-2 text-[10px] text-muted-foreground/60 italic text-center py-2">No generated scenes</p>
               </div>
             </div>
 
@@ -212,8 +212,8 @@ export function InspectorPanel({
                 <span className="text-[10px] font-medium text-muted-foreground">Drag & drop or click</span>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
-                {/* Uploaded/All scenes will go here */}
+              <div className="grid grid-cols-4 gap-2 empty:hidden">
+                <p className="col-span-4 text-[10px] text-muted-foreground/60 italic text-center py-2">No scenes uploaded</p>
               </div>
             </div>
           </TabsContent>
@@ -240,8 +240,8 @@ export function InspectorPanel({
                   <span className="text-xs font-bold text-muted-foreground">Generated Tracks</span>
                 </div>
               </div>
-              <div className="space-y-2">
-                {/* Generated tracks will go here */}
+              <div className="space-y-2 empty:hidden">
+                <p className="text-[10px] text-muted-foreground/60 italic text-center py-2">No generated tracks</p>
               </div>
             </div>
 
@@ -267,8 +267,8 @@ export function InspectorPanel({
                 <span className="text-[10px] font-medium text-muted-foreground">Drag & drop or click</span>
               </div>
 
-              <div className="space-y-2">
-                {/* Uploaded/All tracks will go here */}
+              <div className="space-y-2 empty:hidden">
+                <p className="text-[10px] text-muted-foreground/60 italic text-center py-2">No tracks uploaded</p>
               </div>
             </div>
           </TabsContent>
@@ -295,8 +295,8 @@ export function InspectorPanel({
                     <span className="text-xs font-bold text-muted-foreground">Generated Captions</span>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  {/* Generated captions will go here */}
+                <div className="space-y-2 empty:hidden">
+                  <p className="text-[10px] text-muted-foreground/60 italic text-center py-2">No generated captions</p>
                 </div>
               </div>
 
@@ -322,8 +322,8 @@ export function InspectorPanel({
                   <span className="text-[10px] font-medium text-muted-foreground">Drag & drop or click</span>
                 </div>
 
-                <div className="space-y-2">
-                  {/* Uploaded/All captions will go here */}
+                <div className="space-y-2 empty:hidden">
+                  <p className="text-[10px] text-muted-foreground/60 italic text-center py-2">No captions uploaded</p>
                 </div>
               </div>
           </TabsContent>
