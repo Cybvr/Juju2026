@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation"
 import { Chat } from "@/app/common/chat"
-import { ProjectContent } from "@/app/common/project-content"
+import { Studio } from "@/app/common/studio"
 import type { Project, GalleryImage } from "@/app/common/types"
 import { useEffect, useState } from "react"
 import { projectService } from "@/lib/services/projectService"
@@ -67,7 +67,7 @@ export default function ProjectPage() {
   const projectName = project?.name || (isInitialLoading ? "Loading project..." : "Untitled Video")
 
   return (
-    <ProjectContent
+    <Studio
       projectId={projectId}
       projectName={projectName}
       images={scenes}

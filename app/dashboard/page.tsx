@@ -4,17 +4,17 @@ import { useEffect, useState } from "react"
 import { auth } from "@/lib/firebase"
 import { projectService } from "@/lib/services/projectService"
 import type { Project } from "@/app/common/types"
-import { 
-  Search, 
-  Plus, 
-  MoreHorizontal, 
-  ExternalLink, 
-  Clock, 
-  Monitor, 
-  Palette, 
-  Dice5, 
-  Mic2, 
-  Type, 
+import {
+  Search,
+  Plus,
+  MoreHorizontal,
+  ExternalLink,
+  Clock,
+  Monitor,
+  Palette,
+  Dice5,
+  Mic2,
+  Type,
   Music,
   CheckCircle2,
   Sparkles,
@@ -22,7 +22,10 @@ import {
   Smartphone,
   Square,
   Wand2,
-  Video
+  Video,
+  Pencil,
+  Share2,
+  Trash2
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -38,7 +41,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -94,10 +104,35 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground font-bold uppercase tracking-widest animate-pulse">Loading Projects...</p>
+      <div className="flex-1 bg-muted/30 min-h-screen overflow-y-auto custom-scrollbar">
+        <div className="max-w-[1400px] mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-9 w-48" />
+            </div>
+            <Skeleton className="h-11 w-32 rounded-lg" />
+          </div>
+
+          <div className="mb-8">
+            <Skeleton className="h-14 w-full max-w-md rounded-xl" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-card border border-border rounded-2xl overflow-hidden">
+                <div className="p-2 pb-0">
+                  <Skeleton className="aspect-[16/10] w-full rounded-xl" />
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -105,141 +140,105 @@ export default function DashboardPage() {
 
   return (
     <div className="flex-1 bg-muted/30 min-h-screen overflow-y-auto custom-scrollbar relative">
-      <div className="max-w-[1400px] mx-auto px-8 py-10">
+      <div className="max-w-[1400px] mx-auto px-6 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-4xl font-black text-foreground tracking-tight">Your Projects</h1>
-              <div className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-[10px] font-black uppercase tracking-widest border border-border">
-                ✨ {projects.length} projects
-              </div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-black text-foreground tracking-tight">Your Projects</h1>
+
             </div>
-            <p className="text-muted-foreground font-medium text-sm">
-              Create stunning AI-powered videos in minutes. Your creative studio awaits.
-            </p>
+
           </div>
-          <Button 
+          <Button
             onClick={() => setShowNewProjectModal(true)}
-            className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-3"
+            size="lg"
+            className="gap-2 rounded-lg"
           >
-            <div className="w-6 h-6 rounded-full bg-primary-foreground flex items-center justify-center text-primary">
-              <Plus className="w-4 h-4 stroke-[3px]" />
-            </div>
-            New Project
+            <Plus className="w-5 h-5" />
+            New Video
           </Button>
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
           <div className="relative w-full max-w-md group">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <Input 
-              type="text" 
-              placeholder="Search projects..." 
+            <Input
+              type="text"
+              placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-14 pl-14 pr-6 rounded-full bg-card border border-border shadow-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+              className="w-full h-14 pl-14 pr-6 rounded-xl bg-card border border-border outline-none focus:border-primary transition-all font-medium"
             />
           </div>
 
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
-            {[
-              { label: "Juju PRO", icon: Sparkles, checked: true },
-              { label: "Juju Captions", icon: Type, checked: true },
-              { label: "Voice Pack", icon: Mic2, checked: true },
-            ].map((badge, i) => (
-              <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border shadow-sm whitespace-nowrap">
-                <div className="w-5 h-5 rounded-md flex items-center justify-center bg-secondary text-secondary-foreground">
-                  <badge.icon className="w-3 h-3" />
-                </div>
-                <span className="text-xs font-bold text-foreground">{badge.label}</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-primary fill-primary/10" />
-              </div>
-            ))}
-          </div>
+
         </div>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <Link 
-              key={project.id} 
+            <Link
+              key={project.id}
               href={`/dashboard/projects/${project.id}`}
-              className="group bg-card rounded-[2.5rem] overflow-hidden border border-border shadow-sm hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-500"
+              className="group bg-card overflow-hidden border border-border rounded-2xl"
             >
               {/* Thumbnail Container */}
-              <div className="relative aspect-[16/10] p-4 pb-0">
-                <div className="relative h-full w-full rounded-[2rem] overflow-hidden shadow-inner bg-muted">
-                  <Image 
-                    src={project.thumbnail || "/images/marketing/download-1.png"} 
+              <div className="relative aspect-[16/10] p-2 pb-0">
+                <div className="relative h-full w-full overflow-hidden rounded-xl bg-muted">
+                  <Image
+                    src={project.thumbnail || "/images/marketing/download-1.png"}
                     alt={project.name}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                  
-                  {/* Progress Badge */}
-                  <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/90 backdrop-blur-md flex items-center justify-center border border-border shadow-lg">
-                    <span className="text-[10px] font-black text-primary">100%</span>
-                  </div>
 
-                  {/* Scene Count Overlay */}
-                  <div className="absolute bottom-4 right-4 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-1.5 shadow-lg">
-                    <LayoutPanelLeft className="w-3 h-3" />
-                    <span className="text-[10px] font-black uppercase tracking-tight">7 scenes</span>
-                  </div>
+
                 </div>
               </div>
 
               {/* Project Info */}
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-card-foreground truncate group-hover:text-primary transition-colors">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xl font-bold text-card-foreground truncate transition-colors">
                     {project.name}
                   </h3>
                   <div className="flex items-center gap-1">
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:bg-secondary">
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground hover:bg-secondary">
-                      <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-md text-muted-foreground hover:bg-secondary"
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40 rounded-lg">
+                        <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Rename coming soon") }}>
+                          <Pencil className="w-3.5 h-3.5" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Share coming soon") }}>
+                          <Share2 className="w-3.5 h-3.5" />
+                          Share
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2 font-bold text-xs text-destructive focus:text-destructive" onClick={(e) => { e.preventDefault(); toast.error("Delete coming soon") }}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-muted-foreground mb-6">
-                  <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest">
-                    <Clock className="w-3 h-3" />
-                    <span>Mar 4</span>
-                  </div>
-                </div>
-
-                {/* Badges Row */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                  <div className="px-3 py-1.5 rounded-lg bg-secondary border border-border flex items-center gap-2 text-[10px] font-bold uppercase tracking-tight text-secondary-foreground">
-                    <Monitor className="w-3 h-3" />
-                    16:9
-                  </div>
-                  <div className="px-3 py-1.5 rounded-lg bg-secondary border border-border flex items-center gap-2 text-[10px] font-bold uppercase tracking-tight text-secondary-foreground">
-                    <Palette className="w-3 h-3" />
-                    Animated 3D
-                  </div>
-                  <div className="px-3 py-1.5 rounded-lg bg-secondary border border-border flex items-center gap-2 text-[10px] font-bold uppercase tracking-tight text-primary ml-auto">
-                    ✨ JujuGuide
-                  </div>
-                </div>
-
-                {/* Footer Icons */}
-                <div className="flex items-center justify-between pt-6 border-t border-border">
-                  <div className="flex items-center gap-3">
-                    {[Dice5, Mic2, Type, Music].map((Icon, idx) => (
-                      <div key={idx} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-secondary-foreground">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">7 scenes</span>
+                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest">
+                  <Clock className="w-3 h-3" />
+                  <span>Mar 4</span>
                 </div>
               </div>
             </Link>
@@ -248,14 +247,14 @@ export default function DashboardPage() {
           {/* Empty State / Call to Action */}
           {projects.length === 0 && (
             <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
-              <div className="w-24 h-24 rounded-[2.5rem] bg-secondary flex items-center justify-center mb-8 border border-border">
+              <div className="w-24 h-24 bg-secondary flex items-center justify-center mb-8 border border-border">
                 <Plus className="w-10 h-10 text-primary" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">No projects found</h2>
               <p className="text-muted-foreground max-w-xs mb-8">Start your first video creation and watch the magic happen.</p>
-              <Button 
+              <Button
                 onClick={() => setShowNewProjectModal(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 py-6 h-auto font-bold text-lg shadow-lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-8 py-6 h-auto font-bold text-lg"
               >
                 Create First Video
               </Button>
@@ -268,25 +267,25 @@ export default function DashboardPage() {
         <DialogContent className="flex max-h-[calc(100dvh-1.5rem)] flex-col gap-0 overflow-hidden rounded-3xl border-border/50 p-0 shadow-2xl sm:w-[calc(100%-2rem)] sm:max-w-lg">
           <DialogHeader className="items-center px-5 pb-4 pt-6 text-center sm:px-7 sm:pb-5 sm:pt-7">
             <DialogTitle className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-              Create New Project
+              Create New Video
             </DialogTitle>
             <DialogDescription className="max-w-xs text-sm font-medium text-muted-foreground">
               Choose a creation mode and give your project a name
             </DialogDescription>
           </DialogHeader>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 sm:px-7 sm:pb-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 sm:px-6 sm:pb-5">
             <div className="space-y-5 sm:space-y-6">
               {/* Creation Mode */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <Button 
+                <Button
                   type="button"
                   variant="outline"
                   onClick={() => setSelectedMode("guide")}
                   className={cn(
-                    "relative h-auto min-h-[116px] flex-col items-center justify-center gap-2 whitespace-normal rounded-xl border p-4 text-left shadow-none transition-all group sm:min-h-[132px] sm:p-5",
-                    selectedMode === "guide" 
-                      ? "border-primary bg-primary/5" 
+                    "relative h-auto min-h-[100px] flex-col items-center justify-center gap-2 whitespace-normal rounded-xl border p-3 text-left shadow-none transition-all group sm:min-h-[110px] sm:p-4",
+                    selectedMode === "guide"
+                      ? "border-primary bg-primary/5"
                       : "border-border bg-background hover:border-primary/30 hover:bg-muted/50"
                   )}
                 >
@@ -302,14 +301,14 @@ export default function DashboardPage() {
                   )}
                 </Button>
 
-                <Button 
+                <Button
                   type="button"
                   variant="outline"
                   onClick={() => setSelectedMode("studio")}
                   className={cn(
-                    "relative h-auto min-h-[116px] flex-col items-center justify-center gap-2 whitespace-normal rounded-xl border p-4 text-left shadow-none transition-all group sm:min-h-[132px] sm:p-5",
-                    selectedMode === "studio" 
-                      ? "border-primary bg-primary/5" 
+                    "relative h-auto min-h-[100px] flex-col items-center justify-center gap-2 whitespace-normal rounded-xl border p-3 text-left shadow-none transition-all group sm:min-h-[110px] sm:p-4",
+                    selectedMode === "studio"
+                      ? "border-primary bg-primary/5"
                       : "border-border bg-background hover:border-primary/30 hover:bg-muted/50"
                   )}
                 >
@@ -341,9 +340,9 @@ export default function DashboardPage() {
                       key={format.id}
                       onClick={() => setSelectedFormat(format.id as any)}
                       className={cn(
-                        "h-auto min-h-16 flex-col items-center justify-center gap-1.5 whitespace-normal rounded-xl border p-3 shadow-none transition-all sm:min-h-20 sm:p-4",
-                        selectedFormat === format.id 
-                          ? "border-primary bg-primary/5" 
+                        "h-auto min-h-14 flex-col items-center justify-center gap-1.5 whitespace-normal rounded-xl border p-2 shadow-none transition-all sm:min-h-16 sm:p-3",
+                        selectedFormat === format.id
+                          ? "border-primary bg-primary/5"
                           : "border-border bg-background hover:border-primary/20"
                       )}
                     >
@@ -359,7 +358,7 @@ export default function DashboardPage() {
               {/* Project Name */}
               <div className="space-y-3">
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-1">Project Name</p>
-                <Input 
+                <Input
                   type="text"
                   placeholder="e.g. Royale with cheese"
                   value={projectName}
@@ -371,20 +370,20 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <DialogFooter className="grid grid-cols-2 gap-3 border-t border-border/70 bg-background px-5 py-4 sm:grid-cols-[1fr_2fr] sm:space-x-0 sm:px-7">
-            <Button 
-              variant="ghost" 
+          <DialogFooter className="grid grid-cols-2 gap-3 border-t border-border/70 bg-background px-5 py-3 sm:grid-cols-[1fr_2fr] sm:space-x-0 sm:px-6">
+            <Button
+              variant="ghost"
               onClick={() => setShowNewProjectModal(false)}
               className="h-12 rounded-2xl font-bold text-muted-foreground hover:bg-secondary sm:h-14"
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleCreateProject}
               disabled={!projectName.trim() || isCreating}
               className="h-12 rounded-2xl bg-primary font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-primary/90 active:scale-[0.98] sm:h-14"
             >
-              {isCreating ? "Initializing..." : "Create Project"}
+              {isCreating ? "Initializing..." : "Create Video"}
             </Button>
           </DialogFooter>
         </DialogContent>
