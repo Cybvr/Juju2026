@@ -191,14 +191,10 @@ export function InspectorPanel({
             </div>
 
             <div className="space-y-3 pt-4 border-t border-border/50">
-              <div className="flex items-center gap-2">
-                <Clock className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs font-bold text-muted-foreground">All</span>
-              </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <History className="w-3 h-3 text-muted-foreground invisible" />
-                  <span className="text-xs font-bold text-muted-foreground invisible">All</span>
+                  <Clock className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-xs font-bold text-muted-foreground">All</span>
                 </div>
                 <span 
                   className="text-[10px] font-bold text-primary hover:underline cursor-pointer"
