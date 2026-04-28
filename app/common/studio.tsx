@@ -23,6 +23,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { InspectorPanel } from "@/app/common/inspector-panel"
+import { db } from "@/lib/firebase"
+import { doc, updateDoc } from "firebase/firestore"
 
 interface AlbumImage {
   id: string
@@ -105,6 +107,16 @@ export function Studio({ projectName, images }: StudioProps) {
 
   const currentImage = scenes[activeSceneIndex]?.url || "/images/juju.png"
 
+  const saveToFirebase = async (newScenes: AlbumImage[]) => {
+    if (!projectId) return
+    try {
+      const projectRef = doc(db, "projects", projectId)
+      await updateDoc(projectRef, { scenes: newScenes })
+    } catch (error) {
+      console.error("Error saving to Firebase:", error)
+    }
+  }
+
   const handleGenerateDummyScene = () => {
     const nextIndex = allScenes.length
     const nextScene: AlbumImage = {
@@ -114,7 +126,9 @@ export function Studio({ projectName, images }: StudioProps) {
       hasAudio: false,
       hasCaption: false,
     }
-    setAllScenes((prev) => [...prev, nextScene])
+    const nextScenes = [...allScenes, nextScene]
+    setAllScenes(nextScenes)
+    saveToFirebase(nextScenes)
     handleSceneSelect(nextIndex)
   }
 
@@ -127,7 +141,9 @@ export function Studio({ projectName, images }: StudioProps) {
       hasAudio: false,
       hasCaption: false,
     }
-    setAllScenes((prev) => [...prev, nextScene])
+    const nextScenes = [...allScenes, nextScene]
+    setAllScenes(nextScenes)
+    saveToFirebase(nextScenes)
     handleSceneSelect(nextIndex)
   }
 
@@ -140,20 +156,20 @@ export function Studio({ projectName, images }: StudioProps) {
   }
 
   const handleAddAudio = (trackName: string) => {
-    setAllScenes((prev) => 
-      prev.map((scene, i) => 
-        i === activeSceneIndex ? { ...scene, hasAudio: true } : scene
-      )
+    const nextScenes = allScenes.map((scene, i) => 
+      i === activeSceneIndex ? { ...scene, hasAudio: true } : scene
     )
+    setAllScenes(nextScenes)
+    saveToFirebase(nextScenes)
     toast.success(`Track added to Scene ${activeSceneIndex + 1}`)
   }
 
   const handleAddCaption = (text: string) => {
-    setAllScenes((prev) => 
-      prev.map((scene, i) => 
-        i === activeSceneIndex ? { ...scene, hasCaption: true } : scene
-      )
+    const nextScenes = allScenes.map((scene, i) => 
+      i === activeSceneIndex ? { ...scene, hasCaption: true } : scene
     )
+    setAllScenes(nextScenes)
+    saveToFirebase(nextScenes)
     toast.success(`Caption added to Scene ${activeSceneIndex + 1}`)
   }
 
