@@ -25,11 +25,13 @@ import {
 import {
   CreditCard,
   Download,
+  Home,
   LogOut,
   Moon,
   Share2,
   Settings,
   Sun,
+  Save,
   Plus,
   Copy,
   Trash2,
@@ -46,7 +48,7 @@ import { toast } from "sonner"
 import { LeftPanel } from "@/app/common/left-panel"
 import { RightPanel } from "@/app/common/right-panel"
 import { auth, db } from "@/lib/firebase"
-import { doc, updateDoc } from "firebase/firestore"
+import { doc, serverTimestamp, updateDoc } from "firebase/firestore"
 import { onAuthStateChanged, signOut, User } from "firebase/auth"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
@@ -154,11 +156,28 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
   const currentImage = scenes[activeSceneIndex]?.url || ""
 
-  const saveToFirebase = async (newScenes: AlbumImage[]) => {
+  const getProjectThumbnail = (newScenes: AlbumImage[], sceneIndex = activeSceneIndex) =>
+    newScenes[sceneIndex]?.url ?? newScenes[0]?.url ?? ""
+
+  const prepareScenesForFirebase = (newScenes: AlbumImage[]) =>
+    newScenes.map((scene) => ({
+      id: scene.id,
+      url: scene.url,
+      ...(scene.title ? { title: scene.title } : {}),
+      ...(scene.hasAudio !== undefined ? { hasAudio: scene.hasAudio } : {}),
+      ...(scene.hasCaption !== undefined ? { hasCaption: scene.hasCaption } : {}),
+      ...(scene.style ? { style: scene.style } : {}),
+    }))
+
+  const saveToFirebase = async (newScenes: AlbumImage[], thumbnailSceneIndex = activeSceneIndex) => {
     if (!projectId) return
     try {
       const projectRef = doc(db, "projects", projectId)
-      await updateDoc(projectRef, { scenes: newScenes })
+      await updateDoc(projectRef, {
+        scenes: prepareScenesForFirebase(newScenes),
+        thumbnail: getProjectThumbnail(newScenes, thumbnailSceneIndex),
+        updatedAt: serverTimestamp(),
+      })
     } catch (error) {
       console.error("Error saving to Firebase:", error)
     }
@@ -176,7 +195,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     }
     const nextScenes = [...allScenes, nextScene]
     setAllScenes(nextScenes)
-    saveToFirebase(nextScenes)
+    saveToFirebase(nextScenes, nextIndex)
     handleSceneSelect(nextIndex)
   }
 
@@ -191,7 +210,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     }
     const nextScenes = [...allScenes, nextScene]
     setAllScenes(nextScenes)
-    saveToFirebase(nextScenes)
+    saveToFirebase(nextScenes, nextIndex)
     handleSceneSelect(nextIndex)
   }
 
@@ -269,6 +288,15 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem onClick={() => router.push("/dashboard")} className="gap-2 text-sm font-medium">
+                <Home className="h-4 w-4" />
+                Home
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => saveToFirebase(allScenes)} className="gap-2 text-sm font-medium">
+                <Save className="h-4 w-4" />
+                Save
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem className="gap-2 text-sm font-medium">
                 <Plus className="h-4 w-4" />
                 New Project

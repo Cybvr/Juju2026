@@ -72,8 +72,7 @@ export function LeftPanel({
   const [isUploading, setIsUploading] = useState(false)
   const [selectedSceneStyle, setSelectedSceneStyle] = useState(sceneStyles[0])
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'scene' | 'audio' | 'caption') => {
-    const file = event.target.files?.[0]
+  const uploadFile = async (file: File, type: 'scene' | 'audio' | 'caption') => {
     if (!file) return
 
     const user = auth.currentUser
@@ -99,8 +98,29 @@ export function LeftPanel({
       toast.error(`Upload failed`, { id: toastId })
     } finally {
       setIsUploading(false)
-      event.target.value = ''
     }
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'scene' | 'audio' | 'caption') => {
+    const file = event.target.files?.[0]
+    if (file) {
+      await uploadFile(file, type)
+    }
+    event.target.value = ''
+  }
+
+  const handleSceneDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+
+    const file = event.dataTransfer.files?.[0]
+    if (!file || isUploading) return
+
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      toast.error("Upload an image or video file.")
+      return
+    }
+
+    await uploadFile(file, 'scene')
   }
 
   return (
@@ -242,6 +262,8 @@ export function LeftPanel({
 
                   <div
                     className="border-2 border-dashed border-border/40 rounded-2xl p-8 flex flex-col items-center justify-center bg-muted/5 group hover:bg-muted/10 hover:border-primary/30 transition-all cursor-pointer"
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={handleSceneDrop}
                     onClick={() => sceneInputRef.current?.click()}
                   >
                     <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
