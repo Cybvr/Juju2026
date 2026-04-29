@@ -36,7 +36,11 @@ import {
   ChevronDown,
   Cloud,
   Check,
-  PanelRightClose,
+  FileText,
+  FileUser,
+  PanelLeft,
+  PanelRight,
+  X,
 } from "lucide-react"
 import { toast } from "sonner"
 import { LeftPanel } from "@/app/common/left-panel"
@@ -74,6 +78,8 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
   const [leftPanelVisible, setLeftPanelVisible] = useState(true)
   const [rightPanelVisible, setRightPanelVisible] = useState(true)
+  const [mobileLeftOpen, setMobileLeftOpen] = useState(false)
+  const [mobileRightOpen, setMobileRightOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -241,12 +247,12 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
-      <div className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-5 dark">
-        <div className="flex items-center gap-2">
+      <div className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-3 dark sm:px-5">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
           <TooltipProvider delayDuration={250}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link href="/dashboard" className="flex items-center pr-2">
+                <Link href="/dashboard" className="flex items-center pr-1 sm:pr-2">
                   <Image src="/images/juju.png" alt="Juju" width={28} height={28} className="h-7 w-7 object-contain" />
                 </Link>
               </TooltipTrigger>
@@ -256,9 +262,10 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-9 gap-1 rounded-lg px-2 text-sm font-medium text-white hover:bg-white/10">
-                File
-                <ChevronDown className="h-3 w-3 opacity-50" />
+              <Button variant="ghost" aria-label="File menu" className="h-9 w-9 gap-1 rounded-lg px-0 text-sm font-medium text-muted-foreground hover:bg-secondary sm:w-auto sm:px-2">
+                <FileText className="h-4 w-4 sm:hidden" />
+                <span className="hidden sm:inline">File</span>
+                <ChevronDown className="hidden h-3 w-3 opacity-50 sm:block" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
@@ -278,12 +285,12 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-medium tracking-tight text-white">{projectName}</h1>
+          <div className="flex min-w-0 items-center gap-2">
+            <h1 className="max-w-20 truncate text-sm font-medium tracking-tight text-white sm:max-w-64">{projectName}</h1>
             <TooltipProvider delayDuration={250}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex items-center justify-center rounded-full bg-white/5 w-6 h-6 text-white/50">
+                  <div className="hidden h-6 w-6 items-center justify-center rounded-full bg-white/5 text-muted-foreground sm:flex">
                     <div className="relative">
                       <Cloud className="h-3 w-3" />
                       <Check className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-primary" />
@@ -296,7 +303,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <TooltipProvider delayDuration={250}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -307,19 +314,19 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
                   aria-label="Toggle inspector"
                   className="h-9 w-9 rounded-lg text-muted-foreground hover:bg-secondary"
                 >
-                  <PanelRightClose className={cn("h-4 w-4 transition-transform", !rightPanelVisible && "rotate-180")} />
+                  <FileUser className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">{rightPanelVisible ? "Hide inspector" : "Show inspector"}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button variant="ghost" className="h-9 gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-secondary">
+          <Button variant="ghost" aria-label="Share" className="h-9 w-9 gap-1.5 rounded-lg px-0 text-sm font-medium text-muted-foreground hover:bg-secondary sm:w-auto sm:px-3">
             <Share2 className="h-3.5 w-3.5" />
-            Share
+            <span className="hidden sm:inline">Share</span>
           </Button>
-          <Button className="h-9 gap-1.5 rounded-lg px-4 text-sm font-medium">
+          <Button aria-label="Export" className="h-9 w-9 gap-1.5 rounded-lg px-0 text-sm font-medium sm:w-auto sm:px-4">
             <Download className="h-3.5 w-3.5" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </Button>
           {mounted && (
             <DropdownMenu>
@@ -383,8 +390,76 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
         </div>
       </div>
 
+      {/* Mobile Left Drawer */}
+      {mobileLeftOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileLeftOpen(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-[85vw] bg-card border-r border-border flex flex-col animate-in slide-in-from-left duration-300">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-sm font-bold">Scenes</span>
+              <Button variant="ghost" size="icon" onClick={() => setMobileLeftOpen(false)} className="h-8 w-8">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <LeftPanel
+                scenes={scenes}
+                activeTab={leftTab}
+                contentVisible={true}
+                onTabChange={(tab) => { handleLeftTabChange(tab); }}
+                onGenerateScene={handleGenerateDummyScene}
+                onAddScene={handleAddScene}
+                onAddAudio={handleAddAudio}
+                onAddCaption={handleAddCaption}
+                onClose={() => setMobileLeftOpen(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Right Drawer */}
+      {mobileRightOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileRightOpen(false)} />
+          <div className="absolute right-0 top-0 bottom-0 w-[85vw] bg-card border-l border-border flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-sm font-bold">Inspector</span>
+              <Button variant="ghost" size="icon" onClick={() => setMobileRightOpen(false)} className="h-8 w-8">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <RightPanel
+                projectName={projectName}
+                aspectRatio={aspectRatio}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex min-h-0 flex-1 overflow-hidden p-2 gap-2">
-        <div className="flex shrink-0">
+        {/* Mobile floating panel triggers */}
+        <div className="md:hidden fixed top-20 left-3 z-20 flex flex-col gap-2">
+          <button
+            onClick={() => setMobileLeftOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border shadow-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            aria-label="Scenes"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="md:hidden fixed top-20 right-3 z-20 flex flex-col gap-2">
+          <button
+            onClick={() => setMobileRightOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border shadow-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            aria-label="Inspector"
+          >
+            <PanelRight className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="hidden md:flex shrink-0">
           <LeftPanel
             scenes={scenes}
             activeTab={leftTab}
@@ -425,7 +500,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
         </div>
 
         {rightPanelVisible && (
-          <div className="flex shrink-0 animate-in slide-in-from-right duration-300">
+          <div className="hidden md:flex shrink-0 animate-in slide-in-from-right duration-300">
             <RightPanel
               projectName={projectName}
               aspectRatio={aspectRatio}

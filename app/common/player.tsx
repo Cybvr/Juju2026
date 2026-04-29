@@ -90,24 +90,28 @@ function PlayerControls({
   onPlayingChange,
 }: PlayerControlsProps) {
   return (
-    <div className="grid shrink-0 grid-cols-3 items-center gap-3 border-t border-border bg-background px-3 py-1 shadow-lg">
-      <div className="flex items-center gap-2 font-mono text-[11px] font-bold text-muted-foreground">
+    <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border bg-background px-3 py-2 shadow-lg">
+      {/* Time */}
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground shrink-0">
         <span className="text-foreground">{currentTime}</span>
         <span>/</span>
         <span>{totalTime}</span>
-        <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px]">{remainingTime}</span>
+        <span className="hidden sm:inline rounded-md bg-muted px-1.5 py-0.5 text-[10px]">{remainingTime}</span>
       </div>
 
+      {/* Play button */}
       <div className="flex justify-center">
         <Button
           onClick={() => onPlayingChange(!isPlaying)}
-          className="h-10 w-10 rounded-full bg-foreground p-0 text-primary-foreground  hover:bg-primary/90"
+          className="h-9 w-9 rounded-full bg-foreground p-0 text-primary-foreground hover:bg-primary/90"
         >
-          {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="ml-0.5 h-5 w-5 fill-current" />}
+          {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
         </Button>
       </div>
 
-      <div className="flex items-center justify-end gap-2">
+      {/* Right controls */}
+      <div className="flex items-center justify-end gap-1 shrink-0">
+        <div className="hidden sm:flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -138,21 +142,22 @@ function PlayerControls({
           </DropdownMenuContent>
         </DropdownMenu>
 
+        </div>
         <Select value={aspectRatio} onValueChange={(value) => onAspectRatioChange(value as PlayerProps["aspectRatio"])}>
           <SelectTrigger
             aria-label="Aspect ratio"
-            className="h-9 w-[92px] rounded-lg border-border bg-background px-2 text-xs font-bold shadow-sm"
+            className="h-8 w-[72px] rounded-lg border-border bg-background px-2 text-xs font-bold shadow-sm"
           >
-            <Square className="mr-1.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <Square className="mr-1 h-3 w-3 shrink-0 text-muted-foreground" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent align="end" className="min-w-[92px]">
+          <SelectContent align="end" className="min-w-[72px]">
             <SelectItem value="landscape" className="text-xs font-bold">16:9</SelectItem>
             <SelectItem value="portrait" className="text-xs font-bold">9:16</SelectItem>
             <SelectItem value="square" className="text-xs font-bold">1:1</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:bg-secondary">
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-secondary">
           <Maximize2 className="h-4 w-4" />
         </Button>
       </div>

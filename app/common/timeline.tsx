@@ -116,9 +116,9 @@ export function Timeline({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           <ZoomOut className="h-3.5 w-3.5" />
-          <div className="w-32">
+          <div className="w-24">
             <Slider
               aria-label="Timeline zoom"
               min={88}
