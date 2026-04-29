@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { auth, db } from "@/lib/firebase"
 import { chatService } from "@/lib/services/geminiService"
-import { albumService } from "@/lib/services/albumService"
+import { projectService } from "@/lib/services/projectService"
 import { imageService } from "@/lib/services/imageService"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { toast } from "sonner"
@@ -14,6 +14,7 @@ export function GeneratePanel({ albumName }: { albumName?: string }) {
   const [isLoading, setIsLoading] = useState(false)
   const [attachments, setAttachments] = useState<string[]>([])
   const router = useRouter()
+  const projectName = albumName
 
   useEffect(() => {
     // Check for pending prompt and attachments from landing page
@@ -49,13 +50,13 @@ export function GeneratePanel({ albumName }: { albumName?: string }) {
         { role: "user", parts: [{ text: prompt }] }
       ])
 
-      // 2. Create a new album
-      const albumId = await albumService.createAlbum(auth.currentUser.uid, prompt.substring(0, 30))
+      // 2. Create a new project
+      const projectId = await projectService.createProject(auth.currentUser.uid, projectName || prompt.substring(0, 30))
 
-      // 3. Save initial message pair to the NEW album
+      // 3. Save initial message pair to the new project
       await Promise.all([
         addDoc(collection(db, "messages"), {
-          albumId,
+          projectId,
           userId: auth.currentUser.uid,
           role: "user",
           content: prompt,
@@ -149,5 +150,4 @@ export function GeneratePanel({ albumName }: { albumName?: string }) {
     </div>
   )
 }
-
 

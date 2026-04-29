@@ -1,18 +1,11 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { Chat } from "@/app/common/chat"
 import { Studio } from "@/app/common/studio"
 import type { Project, GalleryImage } from "@/app/common/types"
 import { useEffect, useState } from "react"
-import { projectService } from "@/lib/services/projectService"
-import { db, auth } from "@/lib/firebase"
-import { collection, query, where, orderBy, onSnapshot, doc } from "firebase/firestore"
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable"
+import { db } from "@/lib/firebase"
+import { onSnapshot, doc } from "firebase/firestore"
 
 export default function ProjectPage() {
   const params = useParams()
@@ -34,6 +27,8 @@ export default function ProjectPage() {
           id: img.id,
           url: img.url,
           title: img.title || "Untitled",
+          imageCount: img.imageCount || 1,
+          timeAgo: img.timeAgo || "Recently",
           hasAudio: img.hasAudio || false,
           hasCaption: img.hasCaption || false,
           style: img.style

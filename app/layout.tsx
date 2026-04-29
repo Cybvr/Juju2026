@@ -1,6 +1,6 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Syne, Geist_Mono, Playfair_Display } from 'next/font/google'
+import { Syne, Outfit, Geist_Mono, Playfair_Display } from 'next/font/google'
 import { Toaster } from "sonner"
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
@@ -10,7 +10,11 @@ const syne = Syne({
   variable: "--font-syne",
   weight: ["400", "500", "600", "700", "800"],
 });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
 const _playfair = Playfair_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -45,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${syne.variable} font-sans antialiased`}>
+      <body className={`${syne.variable} ${outfit.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

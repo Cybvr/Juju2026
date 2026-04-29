@@ -3,8 +3,12 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { MarketingFooter } from "@/components/marketing/footer"
+import { MarketingHeader } from "@/components/marketing/header"
+import { industries } from "@/lib/marketing/industries"
+import { professionals } from "@/lib/marketing/professionals"
+import { useCases } from "@/lib/marketing/use-cases"
 import { 
-  Sparkles, 
   MousePointer2, 
   Rocket, 
   PlayCircle, 
@@ -17,11 +21,9 @@ import {
   Users, 
   ShieldCheck, 
   Music, 
-  Mic2, 
   Layout, 
   ChevronDown,
   ArrowRight,
-  Star,
   Quote
 } from "lucide-react"
 import { useState } from "react"
@@ -43,17 +45,13 @@ const marketingImages = [
   "/images/marketing/wizard.webp",
 ]
 
-const sampleVideos = [
-  { title: "The Grand Adventure", image: "/images/marketing/adventure.webp" },
-  { title: "Artist at Work", image: "/images/marketing/artist.webp" },
-  { title: "How Clouds create Rain", image: "/images/marketing/cloud.webp" },
-  { title: "A Joyful Moment", image: "/images/marketing/joyful.webp" },
-  { title: "The Robot Story", image: "/images/marketing/robt.webp" },
-  { title: "Parisian Dream", image: "/images/marketing/download.png" },
-]
-
 export default function Home() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
+
+
+
+
+
 
   const faqs = [
     { q: "Do I need to install Juju?", a: "No, Juju is a cloud-based platform. You can access it from any browser on MAC or Windows." },
@@ -64,38 +62,12 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
-      {/* Navigation */}
-      <header className="fixed top-0 w-full z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="/images/juju.png" alt="Juju" width={32} height={32} className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold tracking-tight text-foreground">Juju</span>
-            </Link>
-          </div>
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#samples" className="hover:text-foreground transition-colors">Samples</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-foreground transition-colors">Support</a>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/auth/login" className="text-sm font-medium hover:text-primary transition-colors hidden sm:block">
-              Sign In
-            </Link>
-            <Link href="/auth/login">
-              <Button className="rounded-full px-6 transition-all hover:scale-105 active:scale-95">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 overflow-x-hidden">
+      <MarketingHeader />
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-44 pb-44 overflow-hidden">
+        <section className="relative pt-24 pb-24 md:pt-44 md:pb-44 overflow-hidden">
           {/* Background Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 blur-[160px] rounded-full -z-10" />
           
@@ -105,15 +77,15 @@ export default function Home() {
                 <Image src="/images/juju.png" alt="Juju Logo" width={16} height={16} className="w-4 h-4 object-contain" />
                 <span>AI Powered Storytelling</span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tighter leading-tight animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 tracking-tighter leading-tight animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
                 Create Epic <span className="text-primary underline decoration-primary/30 underline-offset-4">CARTOON</span> videos <br /> with just a script
               </h1>
             </div>
 
             {/* Visual Stack Recreated */}
-            <div className="relative max-w-6xl mx-auto h-[400px] md:h-[600px] flex items-center justify-center">
-              {/* Carousel Background (Thumbnails) */}
-              <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-40 scale-90 blur-[1px] pointer-events-none">
+            <div className="relative max-w-6xl mx-auto h-auto min-h-[300px] md:h-[600px] flex flex-col md:flex-row items-center justify-center">
+              {/* Carousel Background (Thumbnails) - Hidden on mobile for performance and layout */}
+              <div className="absolute inset-0 hidden md:flex items-center justify-center gap-4 opacity-40 scale-90 blur-[1px] pointer-events-none">
                 {[7, 8, 9, 10, 11].map((idx, i) => (
                   <div key={i} className={cn(
                     "w-48 h-64 rounded-2xl overflow-hidden border border-border/50 relative",
@@ -125,7 +97,7 @@ export default function Home() {
               </div>
 
               {/* Main App Mockup */}
-              <div className="relative z-10 w-full max-w-4xl bg-card border-[6px] border-border/20 rounded-[2rem] shadow-2xl overflow-hidden aspect-video transform perspective-1000 hover:rotate-x-1 transition-transform duration-700">
+              <div className="relative z-10 w-full max-w-4xl bg-card border-[4px] md:border-[6px] border-border/20 rounded-2xl md:rounded-[2rem] shadow-2xl overflow-hidden aspect-video">
                 <div className="absolute inset-0 bg-gradient-to-br from-background/50 to-transparent" />
                 <Image src={marketingImages[3]} alt="Juju Dashboard" fill className="object-cover opacity-90" />
                 
@@ -142,20 +114,20 @@ export default function Home() {
               </div>
 
               {/* Overlapping Prompt Box */}
-              <div className="absolute -bottom-10 left-4 md:left-20 z-20 w-72 md:w-96 p-6 md:p-8 bg-background border border-border rounded-[1.5rem] shadow-2xl animate-in fade-in slide-in-from-left-12 duration-1000 delay-300">
+              <div className="relative md:absolute mt-8 md:mt-0 -bottom-10 md:-bottom-10 left-0 right-0 md:left-20 md:right-auto z-20 p-6 md:p-8 bg-background border border-border rounded-[1.5rem] shadow-2xl animate-in fade-in slide-in-from-left-12 duration-1000 delay-300 max-w-sm md:max-w-none mx-auto md:mx-0">
                 <p className="text-base md:text-xl font-bold mb-6 text-foreground leading-snug">
                   A man driving an open car during summer vacation
                 </p>
                 <Link href="/auth/login">
-                  <Button className="w-full h-14 md:h-16 rounded-2xl bg-primary text-primary-foreground font-black text-xl flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all">
+                  <Button className="w-full h-14 md:h-20 rounded-2xl bg-primary text-primary-foreground font-black text-lg md:text-xl flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all">
                     <Wand2 className="w-6 h-6" />
                     GENERATE
                   </Button>
                 </Link>
               </div>
 
-              {/* Product Box Mockup */}
-              <div className="absolute -bottom-10 -right-4 md:right-10 z-20 w-40 md:w-56 aspect-[3/4] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden rotate-6 hover:rotate-0 transition-transform duration-500 animate-in fade-in slide-in-from-right-12 duration-1000 delay-500">
+              {/* Product Box Mockup - Hidden on small mobile */}
+              <div className="absolute -bottom-10 -right-4 md:right-10 z-20 w-32 md:w-56 aspect-[3/4] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden rotate-6 hover:rotate-0 transition-transform duration-500 animate-in fade-in slide-in-from-right-12 duration-1000 delay-500 hidden sm:block">
                 <div className="absolute inset-0 bg-primary/10" />
                 <div className="p-4 h-full flex flex-col justify-between">
                   <Image src="/images/juju.png" alt="Logo" width={32} height={32} className="w-8 h-8 object-contain mb-4" />
@@ -278,11 +250,11 @@ export default function Home() {
                   icon: Rocket,
                 }
               ].map((item, idx) => (
-                <div key={idx} className="relative group">
+                <div key={idx} className="relative group flex flex-col items-center md:items-start text-center md:text-left">
                   <div className="w-20 h-20 rounded-3xl bg-muted border border-border text-primary flex items-center justify-center mb-8 transition-all duration-500 group-hover:scale-110">
                     <item.icon className="w-10 h-10" />
                   </div>
-                  <div className="text-left">
+                  <div>
                     <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2 block">{item.step}</span>
                     <h3 className="text-xl font-bold mb-3 text-foreground">{item.title}</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed font-bold">{item.desc}</p>
@@ -291,10 +263,10 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="mt-16">
+            <div className="mt-16 flex flex-col items-center md:items-start">
               <Link href="/auth/login">
-                <Button size="default" className="text-sm py-6 px-8 rounded-full font-black shadow-xl transition-all hover:scale-105 active:scale-95">
-                  Click Below To Secure Your Access <ArrowRight className="ml-2 w-4 h-4" />
+                <Button className="text-sm py-6 px-6 md:px-8 rounded-full font-black shadow-xl transition-all hover:scale-105 active:scale-95">
+                  Get Access <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
               <div className="flex items-center gap-4 mt-6 text-[10px] text-muted-foreground font-black uppercase tracking-wider">
@@ -306,32 +278,63 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Samples Section */}
-        <section id="samples" className="py-12 px-4 md:px-6">
-          <div className="container mx-auto bg-background border border-border rounded-[2rem] p-8 md:p-16">
-            <h2 className="text-2xl md:text-3xl font-bold mb-12 text-left text-foreground uppercase tracking-tight">Check Out Our <span className="text-primary underline decoration-primary/30 underline-offset-4">SAMPLES</span></h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sampleVideos.map((sample, i) => (
-                <div key={i} className="group cursor-pointer">
-                  <div className="aspect-video rounded-2xl bg-card border border-border flex items-center justify-center mb-4 transition-all group-hover:border-primary relative overflow-hidden shadow-sm">
-                    <Image 
-                      src={sample.image} 
-                      alt={`${sample.title} sample`} 
-                      fill 
-                      className="object-cover transition-transform duration-500 group-hover:scale-105" 
-                    />
-                    <div className="absolute inset-0 bg-background/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <PlayCircle className="w-10 h-10 text-white drop-shadow-lg group-hover:scale-110 transition-all z-10" />
-                  </div>
-                  <h4 className="text-sm font-bold text-foreground transition-colors group-hover:text-primary">{sample.title}</h4>
+        {/* Audiences, Use Cases, Industries */}
+        <section className="py-12 px-4 md:px-6">
+          <div className="container mx-auto grid gap-6 lg:grid-cols-3">
+            {[
+              {
+                label: "Audiences",
+                title: "Built for the people making videos",
+                desc: "Marketers, educators, agencies, coaches, and kids content teams can turn scripts into finished cartoon videos.",
+                href: "/professionals",
+                items: professionals.slice(0, 4),
+                base: "/professionals",
+              },
+              {
+                label: "Use Cases",
+                title: "Explainers, kids lessons, demos, ads",
+                desc: "Create explainer videos, kids educational videos, product demos, social ads, course videos, and training videos.",
+                href: "/use-cases",
+                items: useCases.slice(0, 4),
+                base: "/use-cases",
+              },
+              {
+                label: "Industries",
+                title: "For education, marketing, SaaS, and more",
+                desc: "Use Juju across education, marketing, ecommerce, product teams, training, entertainment, nonprofits, and local businesses.",
+                href: "/industries",
+                items: industries.slice(0, 4),
+                base: "/industries",
+              },
+            ].map((group) => (
+              <div key={group.label} className="rounded-[2rem] border border-border bg-card p-8 shadow-sm">
+                <p className="mb-3 text-[10px] font-black uppercase tracking-wider text-primary text-center md:text-left">{group.label}</p>
+                <h2 className="mb-4 text-2xl font-bold tracking-tight text-foreground text-center md:text-left">{group.title}</h2>
+                <p className="mb-8 text-sm font-medium leading-relaxed text-muted-foreground text-center md:text-left">{group.desc}</p>
+                <div className="space-y-3">
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.slug}
+                      href={`${group.base}/${item.slug}`}
+                      className="group flex items-center justify-between rounded-2xl border border-border bg-background p-4 transition-all hover:border-primary"
+                    >
+                      <span className="text-sm font-bold text-foreground">{item.title}</span>
+                      <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  ))}
                 </div>
-              ))}
-            </div>
+                <Link href={group.href}>
+                  <Button variant="outline" className="mt-8 w-full rounded-full font-black">
+                    Explore {group.label}
+                  </Button>
+                </Link>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* Comparison Section */}
-        <section className="py-24 bg-muted border-b border-border">
+        <section className="py-24 bg-muted border-b border-border overflow-hidden">
           <div className="container mx-auto px-6">
             <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-bold mb-6 text-foreground uppercase tracking-tight">Competitors Vs <span className="text-primary underline decoration-primary/30 underline-offset-4">JUJU</span></h2>
@@ -340,8 +343,9 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="overflow-x-auto rounded-[2rem] border border-border bg-card shadow-2xl">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <div className="min-w-[800px] rounded-[2rem] border border-border bg-card shadow-2xl overflow-hidden mb-8">
+                <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="p-6 text-sm font-bold text-foreground uppercase tracking-wider">Features</th>
@@ -384,7 +388,8 @@ export default function Home() {
               </table>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* Features Grid */}
         <section id="features" className="py-12 px-4 md:px-6">
@@ -423,9 +428,9 @@ export default function Home() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-12 px-4 md:px-6">
+        <section id="pricing" className="py-24 px-4 md:px-6 bg-muted/30 overflow-hidden">
           <div className="container mx-auto">
-            <div className="max-w-6xl mx-auto rounded-[2.5rem] bg-border p-px shadow-2xl">
+            <div className="max-w-6xl mx-auto rounded-[2.5rem] bg-border p-px shadow-2xl overflow-hidden">
               <div className="bg-card rounded-[2.5rem] overflow-hidden relative">
                 <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -ml-48 -mt-48" />
                 
@@ -456,7 +461,7 @@ export default function Home() {
                     </ul>
 
                     <Link href="/auth/login">
-                      <Button size="lg" className="w-full sm:w-auto text-xl py-8 px-12 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95">
+                      <Button className="w-full sm:w-auto text-xl py-8 px-12 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95">
                         Subscribe Now <ArrowRight className="ml-2 w-6 h-6" />
                       </Button>
                     </Link>
@@ -520,7 +525,7 @@ export default function Home() {
         {/* Final CTA */}
         <section className="py-12 px-4 md:px-6">
           <div className="container mx-auto bg-card border border-border rounded-[2rem] p-8 md:p-16 relative overflow-hidden">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4  text-left text-foreground uppercase tracking-tight">Get Juju <span className="text-primary underline decoration-primary/30 underline-offset-4">RIGHT NOW</span></h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center md:text-left text-foreground uppercase tracking-tight">Get Juju <span className="text-primary underline decoration-primary/30 underline-offset-4">RIGHT NOW</span></h2>
             <p className="text-lg text-primary font-bold mb-12  text-left">Get it now with 81% OFF.</p>
             
             <div className="p-10 rounded-[2rem] bg-card border border-border relative max-w-3xl group shadow-xl">
@@ -543,8 +548,8 @@ export default function Home() {
                   ))}
                 </div>
                 <Link href="/auth/login">
-                  <Button className="w-full text-2xl py-10 px-16 rounded-full font-extrabold shadow-2xl transition-all hover:scale-105 active:scale-95">
-                    CLAIM YOUR ACCESS NOW
+                  <Button className="w-full text-lg md:text-2xl py-8 md:py-12 px-4 md:px-16 rounded-full font-extrabold shadow-2xl transition-all hover:scale-105 active:scale-95">
+                    Get Access
                   </Button>
                 </Link>
               </div>
@@ -553,58 +558,7 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="py-24 border-t border-border bg-card">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-24">
-            <div className="max-w-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <Image src="/images/juju.png" alt="Juju" width={24} height={24} className="w-6 h-6 object-contain" />
-                <span className="text-lg font-bold text-foreground">Juju</span>
-              </div>
-              <p className="text-muted-foreground text-[10px] font-bold leading-relaxed uppercase tracking-tight">
-                Create Epic CARTOON videos with just a script. AI-Powered Storytelling for modern creators and businesses.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-24">
-              <div>
-                <h4 className="font-bold mb-6 text-foreground">Product</h4>
-                <ul className="space-y-4 text-sm text-muted-foreground">
-                  <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-                  <li><a href="#samples" className="hover:text-foreground transition-colors">Samples</a></li>
-                  <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold mb-6 text-foreground">Company</h4>
-                <ul className="space-y-4 text-sm text-muted-foreground">
-                  <li><a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Terms & Conditions</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Refund Policy</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold mb-6 text-foreground">Support</h4>
-                <ul className="space-y-4 text-sm text-muted-foreground">
-                  <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Status</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div className="pt-12 border-t border-border flex flex-col md:flex-row justify-between items-center gap-8">
-            <p className="text-xs text-muted-foreground text-center md:text-left max-w-3xl">
-              DISCLAIMER - The results mentioned are not typical. Individual results will vary. We are not affiliated with Google, YouTube, Facebook, Instagram, TikTok. FACEBOOK is a trademark of FACEBOOK, Inc.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Copyright © 2026 Juju. All Rights Reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   )
 }
