@@ -77,11 +77,8 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
       {/* Sidebar Header */}
       <div className="p-6 flex items-center justify-between">
         {!collapsed && (
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
-              <Image src="/images/juju.png" alt="Juju" width={20} height={20} className="w-5 h-5 object-contain" />
-            </div>
-            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Juju</span>
+          <Link href="/" className="flex items-center pr-2 group">
+            <Image src="/images/juju.png" alt="Juju" width={28} height={28} className="h-7 w-7 object-contain transition-transform group-hover:scale-110" />
           </Link>
         )}
         <Button
@@ -103,7 +100,7 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
         <Button
           onClick={handleNewProject}
           className={cn(
-            "w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all",
+            "w-full h-12 rounded-2xl bg-foreground text-background font-bold shadow-xl shadow-foreground/10 hover:bg-foreground/90 hover:shadow-foreground/20 transition-all",
             collapsed ? "px-0" : "px-4 gap-2"
           )}
         >

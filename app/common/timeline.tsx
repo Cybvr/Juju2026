@@ -25,6 +25,7 @@ interface TimelineScene {
   title?: string
   hasAudio?: boolean
   hasCaption?: boolean
+  style?: string
 }
 
 interface TimelineProps {

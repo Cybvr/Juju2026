@@ -1,9 +1,17 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "")
+const isAiEnabled = Boolean(process.env.NEXT_PUBLIC_GEMINI_API_KEY)
 
 export const chatService = {
     async sendMessage(messages: { role: 'user' | 'model', parts: { text: string }[] }[]) {
+        if (!isAiEnabled) {
+            return {
+                text: "AI generation is currently disabled.",
+                generatePrompt: null
+            }
+        }
+
         const model = genAI.getGenerativeModel({
             model: "gemini-1.5-flash",
             systemInstruction: `You are Juju, an AI creative partner. 

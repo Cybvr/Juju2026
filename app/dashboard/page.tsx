@@ -153,7 +153,7 @@ export default function DashboardPage() {
           <Button
             onClick={() => setShowNewProjectModal(true)}
             size="lg"
-            className="gap-2 rounded-lg"
+            className="gap-2 rounded-lg bg-foreground text-background hover:bg-foreground/90"
           >
             <Plus className="w-5 h-5" />
             New Video
@@ -260,7 +260,7 @@ export default function DashboardPage() {
               <p className="text-muted-foreground max-w-xs mb-8">Start your first video creation and watch the magic happen.</p>
               <Button
                 onClick={() => setShowNewProjectModal(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-8 py-6 h-auto font-bold text-lg"
+                className="h-auto rounded-lg bg-foreground px-8 py-6 text-lg font-bold text-background hover:bg-foreground/90"
               >
                 Create First Video
               </Button>
@@ -387,7 +387,7 @@ export default function DashboardPage() {
             <Button
               onClick={handleCreateProject}
               disabled={!projectName.trim() || isCreating}
-              className="h-12 rounded-2xl bg-primary font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:bg-primary/90 active:scale-[0.98] sm:h-14"
+              className="h-12 rounded-2xl bg-foreground font-bold text-background shadow-lg shadow-foreground/10 transition-all hover:scale-[1.02] hover:bg-foreground/90 active:scale-[0.98] sm:h-14"
             >
               {isCreating ? "Initializing..." : "Create Video"}
             </Button>

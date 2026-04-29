@@ -35,7 +35,8 @@ export default function ProjectPage() {
           url: img.url,
           title: img.title || "Untitled",
           hasAudio: img.hasAudio || false,
-          hasCaption: img.hasCaption || false
+          hasCaption: img.hasCaption || false,
+          style: img.style
         })))
       }
       setIsInitialLoading(false)

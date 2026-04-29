@@ -62,7 +62,7 @@
 
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
+  --font-sans: var(--font-syne), 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --font-serif: 'Playfair Display', 'Times New Roman', serif;
   --color-background: var(--background);
@@ -132,6 +132,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-syne), sans-serif;
   }
 }
 

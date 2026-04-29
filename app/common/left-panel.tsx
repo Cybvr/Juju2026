@@ -18,7 +18,8 @@ import {
   SplitSquareHorizontal,
   History,
   Upload,
-  PanelLeftClose
+  PanelLeftClose,
+  Palette
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -31,14 +32,24 @@ interface AlbumImage {
   title?: string
   hasAudio?: boolean
   hasCaption?: boolean
+  style?: string
 }
+
+const sceneStyles = [
+  "Pixar-style 3D",
+  "Anime",
+  "Claymation",
+  "Comic book",
+  "Watercolor",
+  "Cinematic realistic",
+]
 
 interface LeftPanelProps {
   scenes: AlbumImage[]
   activeTab: string
   contentVisible?: boolean
   onTabChange: (tab: string) => void
-  onGenerateScene: () => void
+  onGenerateScene: (style: string) => void
   onAddScene: (url: string) => void
   onAddAudio: (track: string) => void
   onAddCaption: (text: string) => void
@@ -49,6 +60,7 @@ export function LeftPanel({
   activeTab,
   contentVisible = true,
   onTabChange,
+  onGenerateScene,
   onAddScene,
   onAddAudio,
   onAddCaption,
@@ -58,6 +70,7 @@ export function LeftPanel({
   const audioInputRef = useRef<HTMLInputElement>(null)
   const captionInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [selectedSceneStyle, setSelectedSceneStyle] = useState(sceneStyles[0])
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'scene' | 'audio' | 'caption') => {
     const file = event.target.files?.[0]
@@ -161,13 +174,44 @@ export function LeftPanel({
             {activeTab === 'scenes' && (
               <div className="space-y-6">
                 <div className="space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-1">
+                      <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-[11px] font-medium tracking-wide text-muted-foreground">Style</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {sceneStyles.map((style) => {
+                        const isSelected = selectedSceneStyle === style
+                        return (
+                          <button
+                            key={style}
+                            type="button"
+                            onClick={() => setSelectedSceneStyle(style)}
+                            className={cn(
+                              "min-h-10 rounded-xl border px-3 py-2 text-left text-[11px] font-medium leading-tight transition-all",
+                              isSelected
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : "border-border/60 bg-muted/20 text-muted-foreground hover:border-primary/30 hover:bg-muted/40 hover:text-foreground"
+                            )}
+                          >
+                            {style}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
                   <div className="relative group">
                     <Textarea
                       className="min-h-[140px] bg-muted/40 border-border resize-none pr-12 text-sm leading-relaxed rounded-2xl focus-visible:ring-primary/20"
                       placeholder="Describe the scene..."
                       defaultValue="Cinematic wide shot of two stylish characters in a vintage car driving through a palm-tree lined street in Miami. Pixar-style 3D animation, golden hour lighting, depth of field."
                     />
-                    <Button size="icon" className="absolute bottom-3 right-3 h-8 w-8 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95">
+                    <Button
+                      size="icon"
+                      onClick={() => onGenerateScene(selectedSceneStyle)}
+                      className="absolute bottom-3 right-3 h-8 w-8 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95"
+                    >
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>

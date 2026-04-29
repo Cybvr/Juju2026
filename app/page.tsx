@@ -31,15 +31,25 @@ const marketingImages = [
   "/images/marketing/download.png",
   "/images/marketing/download-1.png",
   "/images/marketing/download-2.png",
+  "/images/marketing/1.webp",
+  "/images/marketing/2.webp",
+  "/images/marketing/3.webp",
+  "/images/marketing/4.webp",
+  "/images/marketing/adventure.webp",
+  "/images/marketing/artist.webp",
+  "/images/marketing/cloud.webp",
+  "/images/marketing/joyful.webp",
+  "/images/marketing/robt.webp",
+  "/images/marketing/wizard.webp",
 ]
 
 const sampleVideos = [
-  { title: "How Tom Became Successful", image: marketingImages[1] },
-  { title: "My Best Friend Max", image: marketingImages[2] },
-  { title: "Parisian Dream", image: marketingImages[0] },
-  { title: "Selling Sunsets", image: marketingImages[1] },
-  { title: "Margaret the Tortoise", image: marketingImages[2] },
-  { title: "How Clouds create Rain", image: marketingImages[0] },
+  { title: "The Grand Adventure", image: "/images/marketing/adventure.webp" },
+  { title: "Artist at Work", image: "/images/marketing/artist.webp" },
+  { title: "How Clouds create Rain", image: "/images/marketing/cloud.webp" },
+  { title: "A Joyful Moment", image: "/images/marketing/joyful.webp" },
+  { title: "The Robot Story", image: "/images/marketing/robt.webp" },
+  { title: "Parisian Dream", image: "/images/marketing/download.png" },
 ]
 
 export default function Home() {
@@ -54,7 +64,7 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 font-sans">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
       {/* Navigation */}
       <header className="fixed top-0 w-full z-50 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -104,7 +114,7 @@ export default function Home() {
             <div className="relative max-w-6xl mx-auto h-[400px] md:h-[600px] flex items-center justify-center">
               {/* Carousel Background (Thumbnails) */}
               <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-40 scale-90 blur-[1px] pointer-events-none">
-                {[0, 1, 2, 1, 0].map((idx, i) => (
+                {[7, 8, 9, 10, 11].map((idx, i) => (
                   <div key={i} className={cn(
                     "w-48 h-64 rounded-2xl overflow-hidden border border-border/50 relative",
                     i === 2 ? "z-0 scale-110 opacity-60" : "opacity-40"
@@ -117,7 +127,7 @@ export default function Home() {
               {/* Main App Mockup */}
               <div className="relative z-10 w-full max-w-4xl bg-card border-[6px] border-border/20 rounded-[2rem] shadow-2xl overflow-hidden aspect-video transform perspective-1000 hover:rotate-x-1 transition-transform duration-700">
                 <div className="absolute inset-0 bg-gradient-to-br from-background/50 to-transparent" />
-                <Image src={marketingImages[0]} alt="Juju Dashboard" fill className="object-cover opacity-90" />
+                <Image src={marketingImages[3]} alt="Juju Dashboard" fill className="object-cover opacity-90" />
                 
                 {/* Internal UI elements (Stylized) */}
                 <div className="absolute top-6 left-6 flex gap-4">
@@ -190,7 +200,7 @@ export default function Home() {
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-foreground">
-                  Generate fully animated cartoon videos on demand
+                  Generate fully animated <span className="text-primary underline decoration-primary/30 underline-offset-4">CARTOON</span> videos on demand
                 </h2>
                 <p className="text-sm text-muted-foreground mb-8 font-medium">
                   Without hiring animators or fighting complicated timelines. Juju handles the entire creative process.
@@ -240,7 +250,7 @@ export default function Home() {
         <section className="py-12 px-4 md:px-6">
           <div className="container mx-auto bg-card border border-border rounded-[2rem] p-8 md:p-16">
             <div className="mb-16">
-              <h2 className="text-2xl md:text-3xl font-bold mb-3  text-foreground uppercase tracking-tight">Juju Builds The Entire Video For You</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3  text-foreground uppercase tracking-tight">Juju Builds The <span className="text-primary underline decoration-primary/30 underline-offset-4">ENTIRE</span> Video For You</h2>
               <p className="text-lg text-muted-foreground font-bold ">With Just 3 Clicks!</p>
             </div>
 
@@ -299,7 +309,7 @@ export default function Home() {
         {/* Samples Section */}
         <section id="samples" className="py-12 px-4 md:px-6">
           <div className="container mx-auto bg-background border border-border rounded-[2rem] p-8 md:p-16">
-            <h2 className="text-2xl md:text-3xl font-bold mb-12 text-left text-foreground uppercase tracking-tight">Check Out Our Samples</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-12 text-left text-foreground uppercase tracking-tight">Check Out Our <span className="text-primary underline decoration-primary/30 underline-offset-4">SAMPLES</span></h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {sampleVideos.map((sample, i) => (
                 <div key={i} className="group cursor-pointer">
@@ -324,50 +334,54 @@ export default function Home() {
         <section className="py-24 bg-muted border-b border-border">
           <div className="container mx-auto px-6">
             <div className="mb-16">
-              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-foreground uppercase tracking-tight">Competitors Vs Juju</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-foreground uppercase tracking-tight">Competitors Vs <span className="text-primary underline decoration-primary/30 underline-offset-4">JUJU</span></h2>
               <p className="text-sm text-muted-foreground max-w-2xl font-bold">
                 Juju isn’t just a replacement for stock footage - it’s a faster, scalable, and fully customizable evolution of it.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-px bg-border rounded-[2rem] overflow-hidden border border-border shadow-xl">
-              <div className="bg-card p-12">
-                <h3 className="text-2xl font-bold mb-8 text-muted-foreground">Competitors</h3>
-                <ul className="space-y-6">
+            <div className="overflow-x-auto rounded-[2rem] border border-border bg-card shadow-2xl">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="p-6 text-sm font-bold text-foreground uppercase tracking-wider">Features</th>
+                    <th className="p-6 text-sm font-bold text-primary uppercase tracking-wider text-center bg-primary/5">Juju AI</th>
+                    <th className="p-6 text-sm font-bold text-muted-foreground uppercase tracking-wider text-center">Freepik</th>
+                    <th className="p-6 text-sm font-bold text-muted-foreground uppercase tracking-wider text-center">Higgsfield</th>
+                    <th className="p-6 text-sm font-bold text-muted-foreground uppercase tracking-wider text-center">Runway</th>
+                    <th className="p-6 text-sm font-bold text-muted-foreground uppercase tracking-wider text-center">Pika</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
                   {[
-                    "Limited Library",
-                    "Time Consuming",
-                    "Costs a lot",
-                    "Hard To Use"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-4 text-muted-foreground">
-                      <XCircle className="w-6 h-6 text-destructive" />
-                      <span>{item}</span>
-                    </li>
+                    { f: "True 3D/2D Cartoon Styles", j: true, c1: false, c2: "Partial", c3: "Realistic", c4: "Realistic" },
+                    { f: "Script-to-Full-Video (5m+)", j: true, c1: false, c2: false, c3: false, c4: false },
+                    { f: "Character Consistency Engine", j: true, c1: false, c2: true, c3: "Difficult", c4: "Limited" },
+                    { f: "AI Storyboard Generation", j: true, c1: false, c2: false, c3: false, c4: false },
+                    { f: "Integrated Voiceover & Music", j: true, c1: false, c2: false, c3: false, c4: false },
+                    { f: "Affordable Flat Monthly Rate", j: true, c1: "Varies", c2: "Expensive", c3: "High Usage Fees", c4: "Credits Based" },
+                  ].map((row, i) => (
+                    <tr key={i} className="hover:bg-accent/50 transition-colors">
+                      <td className="p-6 text-sm font-medium text-foreground">{row.f}</td>
+                      <td className="p-6 text-center bg-primary/5">
+                        <CheckCircle2 className="w-6 h-6 text-primary mx-auto" />
+                      </td>
+                      <td className="p-6 text-center text-xs text-muted-foreground">
+                        {typeof row.c1 === 'boolean' ? (row.c1 ? <CheckCircle2 className="w-5 h-5 text-muted-foreground mx-auto" /> : <XCircle className="w-5 h-5 text-destructive/50 mx-auto" />) : row.c1}
+                      </td>
+                      <td className="p-6 text-center text-xs text-muted-foreground">
+                        {typeof row.c2 === 'boolean' ? (row.c2 ? <CheckCircle2 className="w-5 h-5 text-muted-foreground mx-auto" /> : <XCircle className="w-5 h-5 text-destructive/50 mx-auto" />) : row.c2}
+                      </td>
+                      <td className="p-6 text-center text-xs text-muted-foreground">
+                        {typeof row.c3 === 'boolean' ? (row.c3 ? <CheckCircle2 className="w-5 h-5 text-muted-foreground mx-auto" /> : <XCircle className="w-5 h-5 text-destructive/50 mx-auto" />) : row.c3}
+                      </td>
+                      <td className="p-6 text-center text-xs text-muted-foreground">
+                        {typeof row.c4 === 'boolean' ? (row.c4 ? <CheckCircle2 className="w-5 h-5 text-muted-foreground mx-auto" /> : <XCircle className="w-5 h-5 text-destructive/50 mx-auto" />) : row.c4}
+                      </td>
+                    </tr>
                   ))}
-                </ul>
-              </div>
-              <div className="bg-muted/30 p-12">
-                <div className="flex items-center gap-2 mb-8 text-foreground">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                  <h3 className="text-2xl font-bold">Juju AI Footage</h3>
-                </div>
-                <ul className="space-y-6">
-                  {[
-                    "Generate exactly what you imagined - no searching",
-                    "Average creation time: minutes, not days",
-                    "Lifetime license - yours forever",
-                    "Each clip is unique and never duplicated",
-                    "Remove, replace, or customize any element",
-                    "Choose style, mood, camera motion - total control"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-4 text-foreground/80">
-                      <CheckCircle2 className="w-6 h-6 text-primary" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -375,15 +389,15 @@ export default function Home() {
         {/* Features Grid */}
         <section id="features" className="py-12 px-4 md:px-6">
           <div className="container mx-auto bg-card border border-border rounded-[2rem] p-8 md:p-16">
-            <h2 className="text-2xl md:text-3xl font-bold mb-16 text-left  text-foreground uppercase tracking-tight">Juju Unmatched Features</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-16 text-left  text-foreground uppercase tracking-tight">Juju <span className="text-primary underline decoration-primary/30 underline-offset-4">UNMATCHED</span> Features</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-sm">
               {[
-                { title: "AI Video Wizard Engine", desc: "Type an idea or paste a script - Juju generates storyboard, scenes, voiceover, music, and final video automatically.", icon: Wand2, image: marketingImages[0] },
-                { title: "Create Unlimited Toon Videos", desc: "Generate as many toon videos as you desire, empowering you to express your creativity without boundaries.", icon: Rocket, image: marketingImages[1] },
-                { title: "10+ Visual Styles Included", desc: "Instantly switch the look of your entire video: 3D, classic, modern, comic book, illustration, and more.", icon: Palette, image: marketingImages[2] },
-                { title: "Cloud-Rendered HD Exports", desc: "No heavy processing on your computer — Juju renders in the cloud and delivers a ready-to-download HD video.", icon: Globe, image: marketingImages[0] },
-                { title: "Character Consistency Engine", desc: "Create a character once - and keep the same look across the entire video (same face, same outfit).", icon: Users, image: marketingImages[1] },
-                { title: "AI Music Composer", desc: "Generate original background music by mood — plus ducking, fade-in/out, and multiple variations.", icon: Music, image: marketingImages[2] },
+                { title: "AI Video Wizard Engine", desc: "Type an idea or paste a script - Juju generates storyboard, scenes, voiceover, music, and final video automatically.", icon: Wand2, image: "/images/marketing/wizard.webp" },
+                { title: "Create Unlimited Toon Videos", desc: "Generate as many toon videos as you desire, empowering you to express your creativity without boundaries.", icon: Rocket, image: "/images/marketing/adventure.webp" },
+                { title: "10+ Visual Styles Included", desc: "Instantly switch the look of your entire video: 3D, classic, modern, comic book, illustration, and more.", icon: Palette, image: "/images/marketing/artist.webp" },
+                { title: "Cloud-Rendered HD Exports", desc: "No heavy processing on your computer — Juju renders in the cloud and delivers a ready-to-download HD video.", icon: Globe, image: "/images/marketing/cloud.webp" },
+                { title: "Character Consistency Engine", desc: "Create a character once - and keep the same look across the entire video (same face, same outfit).", icon: Users, image: "/images/marketing/joyful.webp" },
+                { title: "AI Music Composer", desc: "Generate original background music by mood — plus ducking, fade-in/out, and multiple variations.", icon: Music, image: "/images/marketing/robt.webp" },
               ].map((f, i) => (
                 <div key={i} className="rounded-[2rem] bg-card border border-border hover:border-primary transition-all group shadow-sm hover:shadow-lg overflow-hidden">
                   <div className="aspect-video relative overflow-hidden bg-muted">
@@ -418,7 +432,7 @@ export default function Home() {
                 <div className="grid lg:grid-cols-2 items-stretch">
                   {/* Left Side: Pricing Info */}
                   <div className="p-10 md:p-16 relative z-10 border-r border-border/50">
-                    <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground uppercase tracking-tight">Monthly Plan</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground uppercase tracking-tight"><span className="text-primary underline decoration-primary/30 underline-offset-4">MONTHLY</span> Plan</h2>
                     <div className="flex items-center gap-2 mb-8 text-foreground">
                       <span className="text-5xl md:text-6xl font-extrabold">$80</span>
                       <span className="text-lg text-muted-foreground font-bold">/ month</span>
@@ -481,7 +495,7 @@ export default function Home() {
         {/* FAQ Section */}
         <section id="faq" className="py-24 bg-muted border-b border-border">
           <div className="container mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-bold mb-12 text-left text-foreground uppercase tracking-tight">Frequently Asked Questions</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-12 text-left text-foreground uppercase tracking-tight">Frequently Asked <span className="text-primary underline decoration-primary/30 underline-offset-4">QUESTIONS</span></h2>
             <div className="space-y-3 max-w-4xl text-sm">
               {faqs.map((faq, i) => (
                 <div key={i} className="rounded-2xl border border-border bg-background overflow-hidden transition-all hover:shadow-sm">
@@ -506,7 +520,7 @@ export default function Home() {
         {/* Final CTA */}
         <section className="py-12 px-4 md:px-6">
           <div className="container mx-auto bg-card border border-border rounded-[2rem] p-8 md:p-16 relative overflow-hidden">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4  text-left text-foreground uppercase tracking-tight">Get Juju Right Now</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4  text-left text-foreground uppercase tracking-tight">Get Juju <span className="text-primary underline decoration-primary/30 underline-offset-4">RIGHT NOW</span></h2>
             <p className="text-lg text-primary font-bold mb-12  text-left">Get it now with 81% OFF.</p>
             
             <div className="p-10 rounded-[2rem] bg-card border border-border relative max-w-3xl group shadow-xl">

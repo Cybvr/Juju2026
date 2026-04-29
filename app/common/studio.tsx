@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Player } from "@/app/common/player"
 import { Timeline } from "@/app/common/timeline"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
@@ -20,9 +23,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
-  Home,
+  CreditCard,
   Download,
+  LogOut,
+  Moon,
   Share2,
+  Settings,
+  Sun,
   Plus,
   Copy,
   Trash2,
@@ -34,8 +41,10 @@ import {
 import { toast } from "sonner"
 import { LeftPanel } from "@/app/common/left-panel"
 import { RightPanel } from "@/app/common/right-panel"
-import { db } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
 import { doc, updateDoc } from "firebase/firestore"
+import { onAuthStateChanged, signOut, User } from "firebase/auth"
+import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 
 interface AlbumImage {
@@ -44,6 +53,7 @@ interface AlbumImage {
   title?: string
   hasAudio?: boolean
   hasCaption?: boolean
+  style?: string
 }
 
 interface StudioProps {
@@ -64,6 +74,10 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
   const [leftPanelVisible, setLeftPanelVisible] = useState(true)
   const [rightPanelVisible, setRightPanelVisible] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const router = useRouter()
+  const { theme, setTheme } = useTheme()
 
   const dummySceneImage = "/images/boxer-1.jpg"
   const totalSeconds = 24
@@ -73,6 +87,14 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
   useEffect(() => {
     setAllScenes(images)
   }, [images])
+
+  useEffect(() => {
+    setMounted(true)
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser)
+    })
+    return () => unsubscribe()
+  }, [])
 
   useEffect(() => {
     if (scenes.length > 0) {
@@ -136,14 +158,15 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     }
   }
 
-  const handleGenerateDummyScene = () => {
+  const handleGenerateDummyScene = (style: string) => {
     const nextIndex = allScenes.length
     const nextScene: AlbumImage = {
       id: `dummy-scene-${Date.now()}`,
       url: dummySceneImage,
-      title: `Generated ${nextIndex + 1}.jpg`,
+      title: `${style} ${nextIndex + 1}.jpg`,
       hasAudio: false,
       hasCaption: false,
+      style,
     }
     const nextScenes = [...allScenes, nextScene]
     setAllScenes(nextScenes)
@@ -202,6 +225,20 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     toast.success(`Caption added to Scene ${activeSceneIndex + 1}`)
   }
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      toast.success("Logged out successfully")
+      router.push("/auth/login")
+    } catch (error) {
+      toast.error("Error logging out")
+    }
+  }
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light")
+  }
+
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-background font-sans text-foreground">
       <div className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-5 dark">
@@ -209,21 +246,8 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
           <TooltipProvider delayDuration={250}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center pr-2">
+                <Link href="/dashboard" className="flex items-center pr-2">
                   <Image src="/images/juju.png" alt="Juju" width={28} height={28} className="h-7 w-7 object-contain" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Juju</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <TooltipProvider delayDuration={250}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href="/dashboard" className="group">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors group-hover:bg-primary">
-                    <Home className="h-4 w-4" />
-                  </div>
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="bottom">Dashboard</TooltipContent>
@@ -297,6 +321,65 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
             <Download className="h-3.5 w-3.5" />
             Export
           </Button>
+          {mounted && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 overflow-hidden rounded-lg border border-border/50 p-0 text-muted-foreground hover:bg-secondary"
+                >
+                  {user?.photoURL ? (
+                    <Image
+                      src={user.photoURL}
+                      alt={user.displayName || "User"}
+                      width={36}
+                      height={36}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm font-medium">
+                      {user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || "U"}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64 rounded-2xl border-border/50 bg-background/90 p-2 backdrop-blur-xl" side="bottom" align="end" sideOffset={8}>
+                <DropdownMenuLabel className="px-3 py-2 text-xs font-medium text-muted-foreground">Account settings</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-border/50" />
+                <DropdownMenuGroup className="p-1">
+                  <DropdownMenuItem onClick={() => router.push("/dashboard/account")} className="cursor-pointer rounded-xl p-2.5">
+                    <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Workspace Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toast.info("Billing is not yet implemented.")} className="cursor-pointer rounded-xl p-2.5">
+                    <CreditCard className="mr-3 h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Billing & Plans</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator className="bg-border/50" />
+                <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer rounded-xl p-2.5">
+                  {theme === "light" ? (
+                    <>
+                      <Moon className="mr-3 h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Dark Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="mr-3 h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Light Mode</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border/50" />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer rounded-xl p-2.5 text-destructive focus:bg-destructive/10 focus:text-destructive">
+                  <LogOut className="mr-3 h-4 w-4" />
+                  <span className="font-medium">Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 

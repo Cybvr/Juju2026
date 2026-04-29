@@ -3,19 +3,27 @@ import { db } from "@/lib/firebase"
 
 export const imageService = {
     async generateImage(userId: string, projectId: string, prompt: string) {
-        // This is a placeholder for actual Replicate/Imagen API call
-        // For now, we'll simulate a successful generation by adding a placeholder to Firestore
+        const response = await fetch("/api/ai/image", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ prompt }),
+        })
 
-        // In a real app, you would:
-        // 1. Call your serverless function or Replicate API
-        // 2. Get the output URL
-        // 3. Save it to Firestore
+        const generated = await response.json()
+
+        if (!response.ok) {
+            throw new Error(generated?.error || "Image generation failed")
+        }
 
         const docRef = await addDoc(collection(db, "images"), {
             userId,
             projectId,
             prompt,
-            url: "/images/boxer-1.jpg", // Simulated result
+            url: generated.url,
+            provider: generated.provider,
+            model: generated.model,
             title: prompt.substring(0, 20) + "...",
             createdAt: serverTimestamp()
         })
