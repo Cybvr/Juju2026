@@ -137,7 +137,7 @@ export function MarketingHeader() {
             Sign In
           </Link>
           <Link href="/auth/login" className="hidden md:block">
-            <Button className="rounded-full px-6 transition-all hover:scale-105 active:scale-95">Get Started</Button>
+            <Button className=" px-6 transition-all hover:scale-105 active:scale-95">Get Started</Button>
           </Link>
 
           {/* Mobile Menu Toggle */}
@@ -169,7 +169,7 @@ export function MarketingHeader() {
             </Link>
           ))}
           <Link href="/auth/login" className="mt-4 w-full" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button className="w-full rounded-full h-14 text-lg font-bold">
+            <Button className="w-full h-14 text-lg font-bold">
               Get Started
             </Button>
           </Link>
