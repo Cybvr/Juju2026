@@ -7,8 +7,9 @@ export function generateStaticParams() {
   return industries.map((item) => ({ slug: item.slug }))
 }
 
-export default function IndustryDetailPage({ params }: { params: { slug: string } }) {
-  const industry = getIndustry(params.slug)
+export default async function IndustryDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const industry = getIndustry(slug)
 
   if (!industry) {
     notFound()

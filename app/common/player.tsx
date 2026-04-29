@@ -11,7 +11,8 @@ import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
 
 interface PlayerProps {
-  imageUrl: string
+  mediaUrl: string
+  mediaType?: "image" | "video"
   aspectRatio: "landscape" | "portrait" | "square"
   isPlaying: boolean
   activeTool?: string
@@ -35,14 +36,15 @@ interface PlayerControlsProps {
 }
 
 interface PlayerMediaProps {
-  imageUrl: string
+  mediaUrl: string
+  mediaType: "image" | "video"
   aspectRatio: PlayerProps["aspectRatio"]
   zoom: number
   activeTool?: string
   onMediaClick?: () => void
 }
 
-function PlayerMedia({ imageUrl, aspectRatio, zoom, activeTool, onMediaClick }: PlayerMediaProps) {
+function PlayerMedia({ mediaUrl, mediaType, aspectRatio, zoom, activeTool, onMediaClick }: PlayerMediaProps) {
   return (
     <div
       className={cn(
@@ -61,14 +63,24 @@ function PlayerMedia({ imageUrl, aspectRatio, zoom, activeTool, onMediaClick }: 
               : "aspect-square h-full max-w-full"
         )}
       >
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt="Scene Preview"
-            fill
-            className="object-contain opacity-90 transition-transform duration-200"
-            style={{ transform: `scale(${zoom / 100})` }}
-          />
+        {mediaUrl ? (
+          mediaType === "video" ? (
+            <video
+              src={mediaUrl}
+              className="h-full w-full object-contain opacity-90 transition-transform duration-200"
+              style={{ transform: `scale(${zoom / 100})` }}
+              controls
+              playsInline
+            />
+          ) : (
+            <Image
+              src={mediaUrl}
+              alt="Scene Preview"
+              fill
+              className="object-contain opacity-90 transition-transform duration-200"
+              style={{ transform: `scale(${zoom / 100})` }}
+            />
+          )
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/50">
           </div>
@@ -166,7 +178,8 @@ function PlayerControls({
 }
 
 export function Player({
-  imageUrl,
+  mediaUrl,
+  mediaType = "image",
   aspectRatio,
   isPlaying,
   activeTool = "select",
@@ -189,7 +202,8 @@ export function Player({
       className="relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-background transition-all duration-700"
     >
       <PlayerMedia
-        imageUrl={imageUrl}
+        mediaUrl={mediaUrl}
+        mediaType={mediaType}
         aspectRatio={aspectRatio}
         zoom={zoom}
         activeTool={activeTool}

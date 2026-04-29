@@ -7,8 +7,9 @@ export function generateStaticParams() {
   return useCases.map((item) => ({ slug: item.slug }))
 }
 
-export default function UseCaseDetailPage({ params }: { params: { slug: string } }) {
-  const useCase = getUseCase(params.slug)
+export default async function UseCaseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const useCase = getUseCase(slug)
 
   if (!useCase) {
     notFound()

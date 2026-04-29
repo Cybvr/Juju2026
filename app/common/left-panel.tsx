@@ -29,6 +29,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 interface AlbumImage {
   id: string
   url: string
+  type?: "image" | "video"
   title?: string
   hasAudio?: boolean
   hasCaption?: boolean
@@ -50,7 +51,7 @@ interface LeftPanelProps {
   contentVisible?: boolean
   onTabChange: (tab: string) => void
   onGenerateScene: (style: string) => void
-  onAddScene: (url: string) => void
+  onAddScene: (media: { url: string; type: "image" | "video"; title?: string }) => void
   onAddAudio: (track: string) => void
   onAddCaption: (text: string) => void
   onClose?: () => void
@@ -90,7 +91,13 @@ export function LeftPanel({
 
       toast.success(`Upload complete`, { id: toastId })
 
-      if (type === 'scene') onAddScene(url)
+      if (type === 'scene') {
+        onAddScene({
+          url,
+          type: file.type.startsWith("video/") ? "video" : "image",
+          title: file.name,
+        })
+      }
       else if (type === 'audio') onAddAudio(file.name)
       else if (type === 'caption') onAddCaption(file.name)
     } catch (error) {

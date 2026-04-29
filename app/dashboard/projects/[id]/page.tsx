@@ -26,6 +26,7 @@ export default function ProjectPage() {
         setScenes(projectScenes.map((img: any) => ({
           id: img.id,
           url: img.url,
+          type: img.type || "image",
           title: img.title || "Untitled",
           imageCount: img.imageCount || 1,
           timeAgo: img.timeAgo || "Recently",

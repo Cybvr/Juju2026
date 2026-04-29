@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils"
 interface AlbumImage {
   id: string
   url: string
+  type?: "image" | "video"
   title?: string
   hasAudio?: boolean
   hasCaption?: boolean
@@ -154,7 +155,9 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     return () => window.clearInterval(playbackTimer)
   }, [isPlaying])
 
-  const currentImage = scenes[activeSceneIndex]?.url || ""
+  const currentScene = scenes[activeSceneIndex]
+  const currentMediaUrl = currentScene?.url || ""
+  const currentMediaType = currentScene?.type || "image"
 
   const getProjectThumbnail = (newScenes: AlbumImage[], sceneIndex = activeSceneIndex) =>
     newScenes[sceneIndex]?.url ?? newScenes[0]?.url ?? ""
@@ -163,6 +166,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     newScenes.map((scene) => ({
       id: scene.id,
       url: scene.url,
+      type: scene.type || "image",
       ...(scene.title ? { title: scene.title } : {}),
       ...(scene.hasAudio !== undefined ? { hasAudio: scene.hasAudio } : {}),
       ...(scene.hasCaption !== undefined ? { hasCaption: scene.hasCaption } : {}),
@@ -176,6 +180,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
       await updateDoc(projectRef, {
         scenes: prepareScenesForFirebase(newScenes),
         thumbnail: getProjectThumbnail(newScenes, thumbnailSceneIndex),
+        thumbnailType: newScenes[thumbnailSceneIndex]?.type || newScenes[0]?.type || "image",
         updatedAt: serverTimestamp(),
       })
     } catch (error) {
@@ -188,6 +193,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     const nextScene: AlbumImage = {
       id: `dummy-scene-${Date.now()}`,
       url: dummySceneImage,
+      type: "image",
       title: `${style} ${nextIndex + 1}.jpg`,
       hasAudio: false,
       hasCaption: false,
@@ -199,12 +205,13 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     handleSceneSelect(nextIndex)
   }
 
-  const handleAddScene = (imageUrl: string) => {
+  const handleAddScene = (media: { url: string; type?: "image" | "video"; title?: string }) => {
     const nextIndex = allScenes.length
     const nextScene: AlbumImage = {
       id: `gen-scene-${Date.now()}`,
-      url: imageUrl,
-      title: `Generated Scene.jpg`,
+      url: media.url,
+      type: media.type || "image",
+      title: media.title || `Generated Scene.${media.type === "video" ? "mp4" : "jpg"}`,
       hasAudio: false,
       hasCaption: false,
     }
@@ -504,7 +511,8 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
         <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-muted/30 group">
           <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden group">
             <Player
-              imageUrl={currentImage}
+              mediaUrl={currentMediaUrl}
+              mediaType={currentMediaType}
               aspectRatio={aspectRatio}
               isPlaying={isPlaying}
               activeTool={activeTool}

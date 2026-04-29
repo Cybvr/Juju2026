@@ -7,8 +7,9 @@ export function generateStaticParams() {
   return professionals.map((item) => ({ slug: item.slug }))
 }
 
-export default function ProfessionalDetailPage({ params }: { params: { slug: string } }) {
-  const professional = getProfessional(params.slug)
+export default async function ProfessionalDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const professional = getProfessional(slug)
 
   if (!professional) {
     notFound()

@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Loader2, PlayCircle, Sparkles, Wand2 } from "lucide-react"
+import { Loader2, PlayCircle, Wand2 } from "lucide-react"
 import { auth } from "@/lib/firebase"
 import {
     signInWithPopup,
@@ -111,7 +111,7 @@ export default function LoginPage() {
                             <div className="rounded-[2rem] border border-border bg-background p-5 shadow-2xl md:p-7">
                                 <div className="mb-6">
                                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
-                                        <Sparkles className="size-6 text-primary" />
+                                        <Image src="/images/juju.png" alt="Juju" width={28} height={28} className="h-7 w-7 object-contain" />
                                     </div>
                                     <h1 className="mb-2 text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
                                         Welcome to Juju

@@ -10,6 +10,7 @@ import {
   RotateCw,
   Type,
   Trash2,
+  Video,
   ZoomIn,
   ZoomOut,
 } from "lucide-react"
@@ -22,6 +23,7 @@ import { toast } from "sonner"
 interface TimelineScene {
   id: string
   url: string
+  type?: "image" | "video"
   title?: string
   hasAudio?: boolean
   hasCaption?: boolean
@@ -183,12 +185,27 @@ export function Timeline({
                       <span className="truncate">{scene.title || `${index + 1}.mp4`}</span>
                     </div>
                     <div className="relative min-h-0 flex-1 overflow-hidden bg-muted">
-                      <Image
-                        src={scene.url || "/images/juju.png"}
-                        alt={scene.title || `Scene ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
+                      {scene.type === "video" ? (
+                        <>
+                          <video
+                            src={scene.url}
+                            className="h-full w-full object-cover"
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <Video className="h-3.5 w-3.5 text-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <Image
+                          src={scene.url || "/images/juju.png"}
+                          alt={scene.title || `Scene ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
                     </div>
                   </Button>
                 ))
