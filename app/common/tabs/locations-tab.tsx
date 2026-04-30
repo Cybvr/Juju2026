@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin, History } from "lucide-react"
+import { MapPin, History, Eye } from "lucide-react"
 import { GenerateBox, ThumbnailStrip, HistoryGallery, ThumbnailItem } from "./shared"
 import { toast } from "sonner"
 
@@ -9,7 +9,7 @@ interface LocationsTabProps {
   setActiveLocation: (name: string) => void
   locationHistory: ThumbnailItem[]
   setLocationHistory: React.Dispatch<React.SetStateAction<ThumbnailItem[]>>
-  setThumbnailModal: (kind: "styles" | "characters" | "locations" | "audio" | null) => void
+  setThumbnailModal: (kind: "styles" | "characters" | "locations" | "audio" | null, mode?: "picker" | "library") => void
   locationThumbnails: ThumbnailItem[]
 }
 
@@ -41,7 +41,17 @@ export function LocationsTab({
       </div>
 
       <div className="space-y-3 pt-6 border-t border-border/50">
-        <span className="block px-1 text-[11px] font-medium tracking-wide text-muted-foreground">Library</span>
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[11px] font-medium tracking-wide text-muted-foreground">Library</span>
+          <button
+            type="button"
+            onClick={() => setThumbnailModal("locations")}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            title="Open library"
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <ThumbnailStrip
           items={locationThumbnails}
           selectedName={selectedLocation}

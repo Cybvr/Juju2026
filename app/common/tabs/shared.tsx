@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { History, Plus, Send, Upload, Type } from "lucide-react"
+import { History, Plus, Send, Upload, Type, Play, Pause, Activity } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface ThumbnailItem {
@@ -107,6 +107,78 @@ export function HistoryGallery({ items }: { items: ThumbnailItem[] }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       ))}
+    </div>
+  )
+}
+
+export function AudioList({
+  items,
+  selectedName,
+  onSelect,
+  onMore,
+  onAdd,
+}: {
+  items: ThumbnailItem[]
+  selectedName: string
+  onSelect: (name: string) => void
+  onMore?: () => void
+  onAdd?: (item: ThumbnailItem) => void
+}) {
+  return (
+    <div className="space-y-2">
+      {items.map((item) => {
+        const isSelected = selectedName === item.name
+        return (
+          <button
+            key={item.name}
+            type="button"
+            onClick={() => onSelect(item.name)}
+            className={cn(
+              "group flex w-full items-center gap-3 rounded-xl border p-2 transition-all",
+              isSelected
+                ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                : "border-border/50 bg-muted/20 hover:border-primary/30 hover:bg-muted/40"
+            )}
+          >
+            <div className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+              isSelected ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground group-hover:text-foreground"
+            )}>
+              <Play className="h-4 w-4 fill-current" />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col text-left">
+              <span className="truncate text-xs font-semibold">{item.name}</span>
+              <div className="mt-1 flex items-center gap-2">
+                <Activity className="h-3 w-12 text-muted-foreground/40" />
+                <span className="text-[10px] text-muted-foreground/60 font-medium">0:30</span>
+              </div>
+            </div>
+            {onAdd && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAdd(item)
+                }}
+                className="opacity-0 group-hover:opacity-100 h-8 w-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                title="Add to timeline"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            )}
+          </button>
+        )
+      })}
+      {onMore && (
+        <button
+          type="button"
+          onClick={onMore}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 bg-muted/10 py-3 text-[11px] font-semibold text-muted-foreground transition-all hover:border-primary/40 hover:bg-muted/30 hover:text-foreground"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          View More
+        </button>
+      )}
     </div>
   )
 }

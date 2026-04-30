@@ -47,7 +47,7 @@ import { LocationsTab } from "./tabs/locations-tab"
 import { AudioTab } from "./tabs/audio-tab"
 import { CaptionsTab } from "./tabs/captions-tab"
 import { EffectsTab } from "./tabs/effects-tab"
-import { ThumbnailItem, ThumbnailStrip } from "./tabs/shared"
+import { ThumbnailItem, ThumbnailStrip, AudioList } from "./tabs/shared"
 
 interface AlbumImage {
   id: string
@@ -137,6 +137,12 @@ export function LeftPanel({
   const [audioHistory, setAudioHistory] = useState<ThumbnailItem[]>([])
   const [sceneHistory, setSceneHistory] = useState<ThumbnailItem[]>([])
   const [thumbnailModal, setThumbnailModal] = useState<"styles" | "characters" | "locations" | "audio" | null>(null)
+  const [modalMode, setModalMode] = useState<"picker" | "library">("library")
+
+  const handleOpenModal = (kind: "styles" | "characters" | "locations" | "audio" | null, mode: "picker" | "library" = "library") => {
+    setModalMode(mode)
+    setThumbnailModal(kind)
+  }
   const [sceneDrafts, setSceneDrafts] = useState<{
     id: string
     name: string
@@ -144,6 +150,7 @@ export function LeftPanel({
     character: string
     location: string
     prompt: string
+    audio: string
   }[]>([
     {
       id: "scene-1",
@@ -151,6 +158,7 @@ export function LeftPanel({
       style: sceneStyles[0].name,
       character: characterThumbnails[0].name,
       location: locationThumbnails[0].name,
+      audio: audioThumbnails[0].name,
       prompt: "Cinematic wide shot of two stylish characters in a vintage car driving through a palm-tree lined street in Miami. Pixar-style 3D animation, golden hour lighting, depth of field.",
     },
   ])
@@ -179,29 +187,58 @@ export function LeftPanel({
     ? {
       title: "Styles",
       items: sceneStyles,
+      history: sceneHistory,
       selectedName: activeSceneDraft.style,
-      onSelect: (name: string) => updateActiveSceneDraft({ style: name }),
+      onSelect: (item: ThumbnailItem) => {
+        updateActiveSceneDraft({ style: item.name })
+        setSceneHistory(prev => {
+          if (prev.find(i => i.name === item.name)) return prev
+          return [item, ...prev]
+        })
+      },
     }
     : thumbnailModal === "characters"
       ? {
         title: "Characters",
         items: characterThumbnails,
+        history: characterHistory,
         selectedName: selectedCharacter,
-        onSelect: setActiveCharacter,
+        onSelect: (item: ThumbnailItem) => {
+          setActiveCharacter(item.name)
+          setCharacterHistory(prev => {
+            if (prev.find(i => i.name === item.name)) return prev
+            return [item, ...prev]
+          })
+        },
       }
       : thumbnailModal === "locations"
         ? {
           title: "Locations",
           items: locationThumbnails,
+          history: locationHistory,
           selectedName: selectedLocation,
-          onSelect: setActiveLocation,
+          onSelect: (item: ThumbnailItem) => {
+            setActiveLocation(item.name)
+            setLocationHistory(prev => {
+              if (prev.find(i => i.name === item.name)) return prev
+              return [item, ...prev]
+            })
+          },
         }
         : thumbnailModal === "audio"
           ? {
             title: "Audio",
             items: audioThumbnails,
+            history: audioHistory,
             selectedName: selectedAudio,
-            onSelect: setSelectedAudio,
+            isAudio: true,
+            onSelect: (item: ThumbnailItem) => {
+              setSelectedAudio(item.name)
+              setAudioHistory(prev => {
+                if (prev.find(i => i.name === item.name)) return prev
+                return [item, ...prev]
+              })
+            },
           }
           : null
 
@@ -381,10 +418,11 @@ export function LeftPanel({
                 onGenerateScene={onGenerateScene}
                 setSelectedCharacter={setSelectedCharacter}
                 setSelectedLocation={setSelectedLocation}
-                setThumbnailModal={setThumbnailModal}
+                setThumbnailModal={handleOpenModal}
                 sceneHistory={sceneHistory}
                 characterThumbnails={characterThumbnails}
                 locationThumbnails={locationThumbnails}
+                audioThumbnails={audioThumbnails}
                 sceneStyles={sceneStyles}
               />
             )}
@@ -395,7 +433,7 @@ export function LeftPanel({
                 setActiveCharacter={setActiveCharacter}
                 characterHistory={characterHistory}
                 setCharacterHistory={setCharacterHistory}
-                setThumbnailModal={setThumbnailModal}
+                setThumbnailModal={handleOpenModal}
                 characterThumbnails={characterThumbnails}
               />
             )}
@@ -406,7 +444,7 @@ export function LeftPanel({
                 setActiveLocation={setActiveLocation}
                 locationHistory={locationHistory}
                 setLocationHistory={setLocationHistory}
-                setThumbnailModal={setThumbnailModal}
+                setThumbnailModal={handleOpenModal}
                 locationThumbnails={locationThumbnails}
               />
             )}
@@ -419,7 +457,7 @@ export function LeftPanel({
                 setSelectedAudio={setSelectedAudio}
                 audioHistory={audioHistory}
                 setAudioHistory={setAudioHistory}
-                setThumbnailModal={setThumbnailModal}
+                setThumbnailModal={handleOpenModal}
                 audioThumbnails={audioThumbnails}
                 audioStyles={audioStyles}
                 audioInputRef={audioInputRef}
@@ -445,55 +483,32 @@ export function LeftPanel({
               <DialogHeader>
                 <DialogTitle>{thumbnailModalConfig.title}</DialogTitle>
               </DialogHeader>
-              {thumbnailModal === "styles" ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  {thumbnailModalConfig.items.map((item) => {
-                    const isSelected = thumbnailModalConfig.selectedName === item.name
-                    return (
-                      <button
-                        key={item.name}
-                        type="button"
-                        title={item.name}
-                        onClick={() => {
-                          thumbnailModalConfig.onSelect(item.name)
-                          setThumbnailModal(null)
-                        }}
-                        className={cn(
-                          "relative aspect-square overflow-hidden rounded-xl border transition-all",
-                          isSelected
-                            ? "border-primary ring-2 ring-primary/30"
-                            : "border-border/60 hover:border-primary/40"
-                        )}
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
+
+              {modalMode === "picker" ? (
+                thumbnailModalConfig.history && thumbnailModalConfig.history.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    {(thumbnailModalConfig as any).isAudio ? (
+                      <div className="col-span-full">
+                        <AudioList
+                          items={thumbnailModalConfig.history!}
+                          selectedName={thumbnailModalConfig.selectedName}
+                          onSelect={(name) => {
+                            const item = thumbnailModalConfig.history?.find(i => i.name === name)
+                            if (item) thumbnailModalConfig.onSelect(item)
+                            setThumbnailModal(null)
+                          }}
                         />
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <Tabs defaultValue="library" className="gap-4">
-                  <TabsList className="w-full">
-                    <TabsTrigger value="library">Library</TabsTrigger>
-                    <TabsTrigger value="upload">Upload</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="library">
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                      {thumbnailModalConfig.items.map((item) => {
+                      </div>
+                    ) : (
+                      thumbnailModalConfig.history.map((item, idx) => {
                         const isSelected = thumbnailModalConfig.selectedName === item.name
                         return (
                           <button
-                            key={item.name}
+                            key={`${item.name}-${idx}`}
                             type="button"
                             title={item.name}
                             onClick={() => {
-                              if (thumbnailModal === "characters") setCharacterHistory(prev => [item, ...prev])
-                              else if (thumbnailModal === "locations") setLocationHistory(prev => [item, ...prev])
-                              else if (thumbnailModal === "audio") setAudioHistory(prev => [item, ...prev])
-                              else if (thumbnailModal === "styles") setSceneHistory(prev => [item, ...prev])
+                              thumbnailModalConfig.onSelect(item)
                               setThumbnailModal(null)
                             }}
                             className={cn(
@@ -510,7 +525,66 @@ export function LeftPanel({
                             />
                           </button>
                         )
-                      })}
+                      })
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/60 bg-muted/10 text-muted-foreground">
+                    <History className="mb-4 h-12 w-12 opacity-20" />
+                    <div className="text-center">
+                      <p className="text-sm font-semibold">No history items yet</p>
+                      <p className="text-xs opacity-50">Select items from the Library to add them here.</p>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <Tabs defaultValue="library" className="gap-4">
+                  <TabsList className="w-full">
+                    <TabsTrigger value="library">Library</TabsTrigger>
+                    <TabsTrigger value="upload">Upload</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="library">
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                      {(thumbnailModalConfig as any).isAudio ? (
+                        <div className="col-span-full">
+                          <AudioList
+                            items={thumbnailModalConfig.items}
+                            selectedName={thumbnailModalConfig.selectedName}
+                            onSelect={(name) => {
+                              const item = thumbnailModalConfig.items.find(i => i.name === name)
+                              if (item) thumbnailModalConfig.onSelect(item)
+                              setThumbnailModal(null)
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        thumbnailModalConfig.items.map((item) => {
+                          const isSelected = thumbnailModalConfig.selectedName === item.name
+                          return (
+                            <button
+                              key={item.name}
+                              type="button"
+                              title={item.name}
+                              onClick={() => {
+                                thumbnailModalConfig.onSelect(item)
+                                setThumbnailModal(null)
+                              }}
+                              className={cn(
+                                "relative aspect-square overflow-hidden rounded-xl border transition-all",
+                                isSelected
+                                  ? "border-primary ring-2 ring-primary/30"
+                                  : "border-border/60 hover:border-primary/40"
+                              )}
+                            >
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="h-full w-full object-cover"
+                              />
+                            </button>
+                          )
+                        })
+                      )}
                     </div>
                   </TabsContent>
                   <TabsContent value="upload">

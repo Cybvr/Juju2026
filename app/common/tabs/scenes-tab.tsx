@@ -1,6 +1,6 @@
 "use client"
 
-import { UserRound, MapPin, Film, Trash2, Plus, History } from "lucide-react"
+import { UserRound, MapPin, Film, Trash2, Plus, History, Music } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { GenerateBox, HistoryGallery, ThumbnailItem } from "./shared"
 import { toast } from "sonner"
@@ -11,6 +11,7 @@ interface SceneDraft {
   style: string
   character: string
   location: string
+  audio: string
   prompt: string
 }
 
@@ -25,10 +26,11 @@ interface ScenesTabProps {
   onGenerateScene: (style: string) => void
   setSelectedCharacter: (name: string) => void
   setSelectedLocation: (name: string) => void
-  setThumbnailModal: (kind: "styles" | "characters" | "locations" | "audio" | null) => void
+  setThumbnailModal: (kind: "styles" | "characters" | "locations" | "audio" | null, mode?: "picker" | "library") => void
   sceneHistory: ThumbnailItem[]
   characterThumbnails: ThumbnailItem[]
   locationThumbnails: ThumbnailItem[]
+  audioThumbnails: ThumbnailItem[]
   sceneStyles: ThumbnailItem[]
 }
 
@@ -47,6 +49,7 @@ export function ScenesTab({
   sceneHistory,
   characterThumbnails,
   locationThumbnails,
+  audioThumbnails,
   sceneStyles,
 }: ScenesTabProps) {
   return (
@@ -56,6 +59,8 @@ export function ScenesTab({
           characterThumbnails.find((item) => item.name === scene.character) ?? characterThumbnails[0]
         const sceneLocationItem =
           locationThumbnails.find((item) => item.name === scene.location) ?? locationThumbnails[0]
+        const sceneAudioItem =
+          audioThumbnails.find((item) => item.name === scene.audio) ?? audioThumbnails[0]
 
         return (
           <div
@@ -96,8 +101,7 @@ export function ScenesTab({
                   icon: UserRound,
                   onClick: () => {
                     setActiveDraftScene(sceneIndex)
-                    setSelectedCharacter(scene.character)
-                    onTabChange("characters")
+                    setThumbnailModal("characters", "picker")
                   },
                 },
                 {
@@ -105,8 +109,15 @@ export function ScenesTab({
                   icon: MapPin,
                   onClick: () => {
                     setActiveDraftScene(sceneIndex)
-                    setSelectedLocation(scene.location)
-                    onTabChange("locations")
+                    setThumbnailModal("locations", "picker")
+                  },
+                },
+                {
+                  item: sceneAudioItem,
+                  icon: Music,
+                  onClick: () => {
+                    setActiveDraftScene(sceneIndex)
+                    setThumbnailModal("audio", "picker")
                   },
                 },
                 {
@@ -114,7 +125,7 @@ export function ScenesTab({
                   icon: Film,
                   onClick: () => {
                     setActiveDraftScene(sceneIndex)
-                    setThumbnailModal("styles")
+                    setThumbnailModal("styles", "picker")
                   },
                 },
               ]}
@@ -133,6 +144,20 @@ export function ScenesTab({
                 onGenerateScene(scene.style)
               }}
             />
+            <button
+              type="button"
+              onClick={() => {
+                setActiveDraftScene(sceneIndex)
+                toast.info(`${scene.name} added to timeline.`)
+              }}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 py-3 text-xs font-bold text-primary transition-all hover:bg-primary/10 hover:border-primary/40 active:scale-[0.98]"
+            >
+              <div className="flex -space-x-1.5">
+                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" />
+              </div>
+              Add to Timeline
+            </button>
           </div>
         )
       })}
