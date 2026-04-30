@@ -114,8 +114,9 @@ function PlayerControls({
       {/* Play button */}
       <div className="flex justify-center">
         <Button
+          variant="ghost"
           onClick={() => onPlayingChange(!isPlaying)}
-          className="h-9 w-9 rounded-full bg-foreground p-0 text-primary-foreground hover:bg-primary/90"
+          className="h-9 w-9 rounded-lg text-muted-foreground hover:bg-secondary"
         >
           {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
         </Button>

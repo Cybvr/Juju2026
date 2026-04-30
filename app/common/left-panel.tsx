@@ -41,6 +41,13 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { auth, storage } from "@/lib/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { ScenesTab } from "./tabs/scenes-tab"
+import { CharactersTab } from "./tabs/characters-tab"
+import { LocationsTab } from "./tabs/locations-tab"
+import { AudioTab } from "./tabs/audio-tab"
+import { CaptionsTab } from "./tabs/captions-tab"
+import { EffectsTab } from "./tabs/effects-tab"
+import { ThumbnailItem, ThumbnailStrip } from "./tabs/shared"
 
 interface AlbumImage {
   id: string
@@ -95,295 +102,6 @@ const audioThumbnails = [
   { name: "Product beat", image: "/images/marketing/3.webp" },
 ]
 
-interface ThumbnailItem {
-  name: string
-  image: string
-}
-
-interface ThumbnailStripProps {
-  items: ThumbnailItem[]
-  selectedName: string
-  onSelect: (name: string) => void
-  onMore: () => void
-  showLabels?: boolean
-}
-
-type ThumbnailModalKind = "styles" | "characters" | "locations" | "audio"
-
-interface SceneDraft {
-  id: string
-  name: string
-  style: string
-  character: string
-  location: string
-  prompt: string
-}
-
-const defaultScenePrompt = "Cinematic wide shot of two stylish characters in a vintage car driving through a palm-tree lined street in Miami. Pixar-style 3D animation, golden hour lighting, depth of field."
-
-function ThumbnailStrip({
-  items,
-  selectedName,
-  onSelect,
-  onMore,
-  showLabels = false,
-}: ThumbnailStripProps) {
-  return (
-    <div className="overflow-x-auto custom-scrollbar pb-1">
-      <div className="flex gap-1">
-        {items.map((item) => {
-          const isSelected = selectedName === item.name
-          return (
-            <button
-              key={item.name}
-              type="button"
-              title={item.name}
-              onClick={() => onSelect(item.name)}
-              className={cn(
-                "group shrink-0 transition-all",
-                showLabels ? "w-16" : "w-14",
-                isSelected ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <span className={cn(
-                "relative block h-14 w-14 overflow-hidden rounded-xl border transition-all",
-                isSelected
-                  ? "border-primary ring-2 ring-primary/30"
-                  : "border-border/60 group-hover:border-primary/40"
-              )}>
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="h-full w-full object-cover"
-                />
-              </span>
-              {showLabels && (
-                <span className="mt-1 block w-14 truncate text-center text-[10px] font-medium leading-tight">
-                  {item.name}
-                </span>
-              )}
-            </button>
-          )
-        })}
-        <button
-          type="button"
-          title="More"
-          onClick={onMore}
-          className={cn(
-            "shrink-0 text-muted-foreground transition-all hover:text-foreground",
-            showLabels ? "w-16" : "h-14 w-14"
-          )}
-        >
-          <span className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-border/70 bg-muted/20 transition-all hover:border-primary/40 hover:bg-muted/40">
-            <Plus className="h-5 w-5" />
-          </span>
-          {showLabels && (
-            <span className="mt-1 block w-14 text-center text-[10px] font-medium leading-tight">
-              More
-            </span>
-          )}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-interface SelectedThumbnailProps {
-  item: ThumbnailItem
-  icon: React.ElementType
-  onClick: () => void
-}
-
-function SelectedThumbnail({
-  item,
-  icon: Icon,
-  onClick,
-}: SelectedThumbnailProps) {
-  return (
-    <button
-      type="button"
-      title={item.name}
-      onClick={onClick}
-      className="group flex min-w-0 items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-1.5 transition-all hover:border-primary/40 hover:bg-muted/40"
-    >
-      <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="h-full w-full object-cover transition-transform group-hover:scale-105"
-        />
-      </span>
-      <Icon className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
-    </button>
-  )
-}
-
-function EmptyHistory({ label, items = [] }: { label: string; items?: ThumbnailItem[] }) {
-  return (
-    <div className="space-y-3 pt-6 border-t border-border/50">
-      <div className="flex items-center gap-2 px-1">
-        <History className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="text-[11px] font-medium tracking-wide text-muted-foreground">History</span>
-      </div>
-      {items.length > 0 ? (
-        <div className="space-y-2">
-          {items.map((item, index) => (
-            <button
-              key={`${item.name}-${index}`}
-              type="button"
-              title={item.name}
-              className="group w-full overflow-hidden rounded-xl border border-border/60 bg-muted/20 transition-all hover:border-primary/40"
-            >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
-              />
-            </button>
-          ))}
-        </div>
-      ) : (
-        <p className="text-[11px] text-muted-foreground/50 italic text-center py-6 bg-muted/20 rounded-2xl border border-dashed border-border/50">
-          No {label} yet
-        </p>
-      )}
-    </div>
-  )
-}
-
-interface GenerateReference {
-  item: ThumbnailItem
-  icon?: React.ElementType
-  onClick?: () => void
-}
-
-interface GenerateBoxProps {
-  value?: string
-  defaultValue?: string
-  placeholder: string
-  references?: GenerateReference[]
-  addOptions?: ThumbnailItem[]
-  selectedAddOption?: string
-  onSelectAddOption?: (name: string) => void
-  onChange?: (value: string) => void
-  onCreate: () => void
-  onAdd?: () => void
-}
-
-function GenerateBox({
-  value,
-  defaultValue,
-  placeholder,
-  references = [],
-  addOptions = [],
-  selectedAddOption,
-  onSelectAddOption,
-  onChange,
-  onCreate,
-  onAdd,
-}: GenerateBoxProps) {
-  return (
-    <div className="rounded-2xl border border-border bg-muted/40 p-3 focus-within:ring-2 focus-within:ring-primary/20">
-      <textarea
-        className="min-h-[140px] w-full resize-none border-0 bg-transparent text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
-        placeholder={placeholder}
-        value={value}
-        defaultValue={defaultValue}
-        onChange={(event) => onChange?.(event.target.value)}
-      />
-
-      {references.length > 0 && (
-        <div className="mt-2 space-y-2">
-          {references.map((reference) => {
-            const Icon = reference.icon
-            return (
-              <button
-                key={reference.item.name}
-                type="button"
-                title={reference.item.name}
-                onClick={reference.onClick}
-                className="flex w-full items-center gap-3 rounded-xl bg-background/60 px-2 py-1.5 text-left transition-colors hover:bg-background"
-              >
-                <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                  <img
-                    src={reference.item.image}
-                    alt={reference.item.name}
-                    className="h-full w-full object-cover"
-                  />
-                </span>
-                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">
-                  {reference.item.name}
-                </span>
-                {Icon && <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />}
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      <div className="mt-3 flex items-center justify-between gap-2">
-        {addOptions.length > 0 ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-                aria-label="Add"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="w-56 rounded-xl p-1.5">
-              {addOptions.map((item) => {
-                const isSelected = selectedAddOption === item.name
-                return (
-                  <DropdownMenuItem
-                    key={item.name}
-                    onSelect={() => onSelectAddOption?.(item.name)}
-                    className={cn(
-                      "flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5",
-                      isSelected
-                        ? "bg-primary/10 text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <span className="h-9 w-9 shrink-0 overflow-hidden rounded-md">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </span>
-                    <span className="min-w-0 truncate text-xs font-semibold">
-                      {item.name}
-                    </span>
-                  </DropdownMenuItem>
-                )
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <button
-            type="button"
-            onClick={onAdd}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-            aria-label="Add"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        )}
-        <Button
-          size="icon"
-          onClick={onCreate}
-          aria-label="Create"
-          className="h-10 w-10 shrink-0 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95"
-        >
-          <Send className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  )
-}
 
 interface LeftPanelProps {
   scenes: AlbumImage[]
@@ -417,15 +135,23 @@ export function LeftPanel({
   const [characterHistory, setCharacterHistory] = useState<ThumbnailItem[]>([])
   const [locationHistory, setLocationHistory] = useState<ThumbnailItem[]>([])
   const [audioHistory, setAudioHistory] = useState<ThumbnailItem[]>([])
-  const [thumbnailModal, setThumbnailModal] = useState<ThumbnailModalKind | null>(null)
-  const [sceneDrafts, setSceneDrafts] = useState<SceneDraft[]>([
+  const [sceneHistory, setSceneHistory] = useState<ThumbnailItem[]>([])
+  const [thumbnailModal, setThumbnailModal] = useState<"styles" | "characters" | "locations" | "audio" | null>(null)
+  const [sceneDrafts, setSceneDrafts] = useState<{
+    id: string
+    name: string
+    style: string
+    character: string
+    location: string
+    prompt: string
+  }[]>([
     {
       id: "scene-1",
       name: "Scene 1",
       style: sceneStyles[0].name,
       character: characterThumbnails[0].name,
       location: locationThumbnails[0].name,
-      prompt: defaultScenePrompt,
+      prompt: "Cinematic wide shot of two stylish characters in a vintage car driving through a palm-tree lined street in Miami. Pixar-style 3D animation, golden hour lighting, depth of field.",
     },
   ])
   const [activeDraftScene, setActiveDraftScene] = useState(0)
@@ -445,47 +171,38 @@ export function LeftPanel({
     setSelectedLocation(name)
     updateActiveSceneDraft({ location: name })
   }
-  const addUniqueHistoryItem = (
-    item: ThumbnailItem,
-    setHistory: React.Dispatch<React.SetStateAction<ThumbnailItem[]>>
-  ) => {
-    setHistory((currentItems) => {
-      const nextItems = [item, ...currentItems.filter((currentItem) => currentItem.name !== item.name)]
-      return nextItems.slice(0, 12)
-    })
-  }
   const updateActiveSceneDraft = (updates: Partial<SceneDraft>) => {
     updateSceneDraft(activeDraftScene, updates)
   }
 
   const thumbnailModalConfig = thumbnailModal === "styles"
     ? {
-        title: "Styles",
-        items: sceneStyles,
-        selectedName: activeSceneDraft.style,
-        onSelect: (name: string) => updateActiveSceneDraft({ style: name }),
-      }
+      title: "Styles",
+      items: sceneStyles,
+      selectedName: activeSceneDraft.style,
+      onSelect: (name: string) => updateActiveSceneDraft({ style: name }),
+    }
     : thumbnailModal === "characters"
       ? {
-          title: "Characters",
-          items: characterThumbnails,
-          selectedName: selectedCharacter,
-          onSelect: setActiveCharacter,
-        }
+        title: "Characters",
+        items: characterThumbnails,
+        selectedName: selectedCharacter,
+        onSelect: setActiveCharacter,
+      }
       : thumbnailModal === "locations"
         ? {
-            title: "Locations",
-            items: locationThumbnails,
-            selectedName: selectedLocation,
-            onSelect: setActiveLocation,
-          }
+          title: "Locations",
+          items: locationThumbnails,
+          selectedName: selectedLocation,
+          onSelect: setActiveLocation,
+        }
         : thumbnailModal === "audio"
           ? {
-              title: "Audio",
-              items: audioThumbnails,
-              selectedName: selectedAudio,
-              onSelect: setSelectedAudio,
-            }
+            title: "Audio",
+            items: audioThumbnails,
+            selectedName: selectedAudio,
+            onSelect: setSelectedAudio,
+          }
           : null
 
   const openUploadForModal = () => {
@@ -653,287 +370,65 @@ export function LeftPanel({
         <div className="flex flex-1 flex-col min-w-0 bg-background/30">
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2.5">
             {activeTab === 'scenes' && (
-              <div className="space-y-6">
-                {sceneDrafts.map((scene, sceneIndex) => {
-                  const sceneStyleItem =
-                    sceneStyles.find((item) => item.name === scene.style) ?? sceneStyles[0]
-                  const sceneCharacterItem =
-                    characterThumbnails.find((item) => item.name === scene.character) ?? characterThumbnails[0]
-                  const sceneLocationItem =
-                    locationThumbnails.find((item) => item.name === scene.location) ?? locationThumbnails[0]
-
-                  return (
-                    <div
-                      key={scene.id}
-                      className="space-y-3"
-                      onFocusCapture={() => setActiveDraftScene(sceneIndex)}
-                    >
-                      <div className="flex items-center justify-between gap-2 px-1">
-                        <span className="text-xs font-semibold text-foreground">
-                          {scene.name}
-                        </span>
-                        {sceneDrafts.length > 1 && (
-                          <TooltipProvider delayDuration={250}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteDraftScene(sceneIndex)}
-                                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                                  aria-label={`Delete ${scene.name}`}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom">Delete scene</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </div>
-
-                      <GenerateBox
-                        placeholder={`Describe ${scene.name.toLowerCase()}...`}
-                        value={scene.prompt}
-                        onChange={(value) => updateSceneDraft(sceneIndex, { prompt: value })}
-                        references={[
-                          {
-                            item: sceneStyleItem,
-                            icon: Film,
-                          },
-                          {
-                            item: sceneCharacterItem,
-                            icon: UserRound,
-                            onClick: () => {
-                              setActiveDraftScene(sceneIndex)
-                              setSelectedCharacter(scene.character)
-                              onTabChange("characters")
-                            },
-                          },
-                          {
-                            item: sceneLocationItem,
-                            icon: MapPin,
-                            onClick: () => {
-                              setActiveDraftScene(sceneIndex)
-                              setSelectedLocation(scene.location)
-                              onTabChange("locations")
-                            },
-                          },
-                        ]}
-                        onAdd={() => {
-                          setActiveDraftScene(sceneIndex)
-                          toast.info(`${scene.name} added to timeline.`)
-                        }}
-                        addOptions={sceneStyles}
-                        selectedAddOption={scene.style}
-                        onSelectAddOption={(name) => {
-                          setActiveDraftScene(sceneIndex)
-                          updateSceneDraft(sceneIndex, { style: name })
-                        }}
-                        onCreate={() => {
-                          setActiveDraftScene(sceneIndex)
-                          onGenerateScene(scene.style)
-                        }}
-                      />
-                    </div>
-                  )
-                })}
-
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={handleAddDraftScene}
-                    className="flex min-h-20 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/60 bg-muted/10 text-muted-foreground transition-all hover:border-primary/40 hover:bg-muted/30 hover:text-foreground"
-                  >
-                    <Plus className="h-5 w-5" />
-                    <span className="text-xs font-semibold">
-                      Add Scene
-                    </span>
-                  </button>
-                </div>
-              </div>
+              <ScenesTab
+                sceneDrafts={sceneDrafts}
+                activeDraftScene={activeDraftScene}
+                setActiveDraftScene={setActiveDraftScene}
+                updateSceneDraft={updateSceneDraft}
+                handleDeleteDraftScene={handleDeleteDraftScene}
+                handleAddDraftScene={handleAddDraftScene}
+                onTabChange={onTabChange}
+                onGenerateScene={onGenerateScene}
+                setSelectedCharacter={setSelectedCharacter}
+                setSelectedLocation={setSelectedLocation}
+                setThumbnailModal={setThumbnailModal}
+                sceneHistory={sceneHistory}
+                characterThumbnails={characterThumbnails}
+                locationThumbnails={locationThumbnails}
+                sceneStyles={sceneStyles}
+              />
             )}
 
             {activeTab === 'characters' && (
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <GenerateBox
-                    placeholder="Describe the character..."
-                    defaultValue="A warm, quick-witted protagonist in their late twenties with expressive eyes, short textured hair, a vintage bomber jacket, and a calm confidence. Keep the same face, outfit palette, and proportions across every scene."
-                    references={[
-                      {
-                        item: characterThumbnails.find((item) => item.name === selectedCharacter) ?? characterThumbnails[0],
-                        icon: UserRound,
-                      },
-                    ]}
-                    addOptions={characterThumbnails}
-                    selectedAddOption={selectedCharacter}
-                    onSelectAddOption={setActiveCharacter}
-                    onCreate={() => toast.info("Character generation is not yet implemented.")}
-                  />
-                </div>
-
-                <div className="space-y-3 pt-6 border-t border-border/50">
-                  <span className="block px-1 text-[11px] font-medium tracking-wide text-muted-foreground">Library</span>
-                  <ThumbnailStrip
-                    items={characterThumbnails}
-                    selectedName={selectedCharacter}
-                    onSelect={(name) => {
-                      const item = characterThumbnails.find((thumbnail) => thumbnail.name === name)
-                      if (item) addUniqueHistoryItem(item, setCharacterHistory)
-                    }}
-                    onMore={() => setThumbnailModal("characters")}
-                  />
-                </div>
-
-                <EmptyHistory label="characters" items={characterHistory} />
-              </div>
+              <CharactersTab
+                selectedCharacter={selectedCharacter}
+                setActiveCharacter={setActiveCharacter}
+                characterHistory={characterHistory}
+                setCharacterHistory={setCharacterHistory}
+                setThumbnailModal={setThumbnailModal}
+                characterThumbnails={characterThumbnails}
+              />
             )}
 
             {activeTab === 'locations' && (
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <GenerateBox
-                    placeholder="Describe the location..."
-                    defaultValue="A sunlit coastal market street with pastel storefronts, hanging plants, weathered tile, and a view of blue water between buildings. Preserve the same architecture, color palette, and geography across shots."
-                    references={[
-                      {
-                        item: locationThumbnails.find((item) => item.name === selectedLocation) ?? locationThumbnails[0],
-                        icon: MapPin,
-                      },
-                    ]}
-                    addOptions={locationThumbnails}
-                    selectedAddOption={selectedLocation}
-                    onSelectAddOption={setActiveLocation}
-                    onCreate={() => toast.info("Location generation is not yet implemented.")}
-                  />
-                </div>
-
-                <div className="space-y-3 pt-6 border-t border-border/50">
-                  <span className="block px-1 text-[11px] font-medium tracking-wide text-muted-foreground">Library</span>
-                  <ThumbnailStrip
-                    items={locationThumbnails}
-                    selectedName={selectedLocation}
-                    onSelect={(name) => {
-                      const item = locationThumbnails.find((thumbnail) => thumbnail.name === name)
-                      if (item) addUniqueHistoryItem(item, setLocationHistory)
-                    }}
-                    onMore={() => setThumbnailModal("locations")}
-                  />
-                </div>
-
-                <EmptyHistory label="locations" items={locationHistory} />
-              </div>
+              <LocationsTab
+                selectedLocation={selectedLocation}
+                setActiveLocation={setActiveLocation}
+                locationHistory={locationHistory}
+                setLocationHistory={setLocationHistory}
+                setThumbnailModal={setThumbnailModal}
+                locationThumbnails={locationThumbnails}
+              />
             )}
 
             {activeTab === 'audio' && (
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <GenerateBox
-                    placeholder="Prompt music style..."
-                    defaultValue="Cinematic orchestral score with rising tension, featuring deep bass and ethereal synth pads. 80bpm, mood: epic and mysterious."
-                    references={[
-                      {
-                        item: audioStyles.find((item) => item.name === selectedAudioStyle) ?? audioStyles[0],
-                        icon: Music,
-                      },
-                    ]}
-                    addOptions={audioStyles}
-                    selectedAddOption={selectedAudioStyle}
-                    onSelectAddOption={setSelectedAudioStyle}
-                    onCreate={() => toast.info(`${selectedAudioStyle} audio generation is not yet implemented.`)}
-                  />
-                </div>
-
-                <div className="space-y-3 pt-6 border-t border-border/50">
-                  <span className="block px-1 text-[11px] font-medium tracking-wide text-muted-foreground">Library</span>
-                  <ThumbnailStrip
-                    items={audioThumbnails}
-                    selectedName={selectedAudio}
-                    onSelect={(name) => {
-                      const item = audioThumbnails.find((thumbnail) => thumbnail.name === name)
-                      if (item) addUniqueHistoryItem(item, setAudioHistory)
-                    }}
-                    onMore={() => setThumbnailModal("audio")}
-                  />
-                </div>
-
-                <EmptyHistory label="audio generations or uploads" items={audioHistory} />
-              </div>
+              <AudioTab
+                selectedAudioStyle={selectedAudioStyle}
+                setSelectedAudioStyle={setSelectedAudioStyle}
+                selectedAudio={selectedAudio}
+                setSelectedAudio={setSelectedAudio}
+                audioHistory={audioHistory}
+                setAudioHistory={setAudioHistory}
+                setThumbnailModal={setThumbnailModal}
+                audioThumbnails={audioThumbnails}
+                audioStyles={audioStyles}
+                audioInputRef={audioInputRef}
+              />
             )}
 
-            {activeTab === 'captions' && (
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Textarea
-                      className="min-h-[140px] bg-muted/40 border-border resize-none text-sm rounded-2xl focus-visible:ring-primary/20"
-                      placeholder="Enter or generate captions..."
-                      defaultValue="In the heart of the neon city, where dreams and reality blur into one, two strangers find themselves on a path that will change their destinies forever. A cinematic journey through the soul of the night."
-                    />
-                    <Button
-                      onClick={() => toast.info("Caption generation is not yet implemented.")}
-                      className="h-10 w-full rounded-xl font-semibold shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]"
-                    >
-                      Create
-                    </Button>
-                  </div>
-                </div>
+            {activeTab === 'captions' && <CaptionsTab />}
 
-                <div className="space-y-4 pt-6 border-t border-border/50">
-
-                  <p className="text-[11px] text-muted-foreground/50 italic text-center py-6 bg-muted/20 rounded-2xl border border-dashed border-border/50">
-                    No generated captions
-                  </p>
-                </div>
-
-                <div className="space-y-4 pt-6 border-t border-border/50">
-                  <div className="flex items-center justify-between px-1">
-                    <div className="flex items-center gap-2">
-                      <History className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-[11px] font-medium tracking-wide text-muted-foreground">Library</span>
-                    </div>
-                    <button
-                      className="text-[11px] font-medium text-primary hover:underline transition-all"
-                      onClick={() => captionInputRef.current?.click()}
-                    >
-                      Upload
-                    </button>
-                  </div>
-
-                  <div
-                    className="border-2 border-dashed border-border/40 rounded-2xl p-8 flex flex-col items-center justify-center bg-muted/5 group hover:bg-muted/10 hover:border-primary/30 transition-all cursor-pointer"
-                    onClick={() => captionInputRef.current?.click()}
-                  >
-                    <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center shadow-sm mb-3">
-                      <Type className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <span className="text-[11px] font-medium text-muted-foreground">Click to browse or drag and drop</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'transitions' && (
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    {["Cut", "Fade", "Dip", "Slide"].map((transition) => (
-                      <Button key={transition} variant="outline" className="h-12 rounded-2xl text-xs font-medium border-border/50 hover:bg-muted/50 hover:border-primary/30 transition-all">
-                        {transition}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-6 border-t border-border/50">
-                  <span className="text-[11px] font-medium tracking-wide text-muted-foreground px-1">Global duration</span>
-                  <div className="flex items-center justify-between border border-border bg-muted/20 px-4 py-3 rounded-2xl">
-                    <span className="text-sm font-medium text-foreground">0.4 seconds</span>
-                    <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Default</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === 'transitions' && <EffectsTab />}
           </div>
         </div>
       )}
@@ -986,7 +481,7 @@ export function LeftPanel({
                     <TabsTrigger value="upload">Upload</TabsTrigger>
                   </TabsList>
                   <TabsContent value="library">
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                       {thumbnailModalConfig.items.map((item) => {
                         const isSelected = thumbnailModalConfig.selectedName === item.name
                         return (
@@ -995,7 +490,10 @@ export function LeftPanel({
                             type="button"
                             title={item.name}
                             onClick={() => {
-                              thumbnailModalConfig.onSelect(item.name)
+                              if (thumbnailModal === "characters") setCharacterHistory(prev => [item, ...prev])
+                              else if (thumbnailModal === "locations") setLocationHistory(prev => [item, ...prev])
+                              else if (thumbnailModal === "audio") setAudioHistory(prev => [item, ...prev])
+                              else if (thumbnailModal === "styles") setSceneHistory(prev => [item, ...prev])
                               setThumbnailModal(null)
                             }}
                             className={cn(
