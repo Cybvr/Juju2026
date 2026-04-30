@@ -76,7 +76,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [progress, setProgress] = useState(35)
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
-  const [leftTab, setLeftTab] = useState<"scenes" | "captions" | "transitions" | "audio">("scenes")
+  const [leftTab, setLeftTab] = useState<"scenes" | "characters" | "locations" | "captions" | "transitions" | "audio">("scenes")
   const [activeTool, setActiveTool] = useState<string>("select")
 
   const [leftPanelVisible, setLeftPanelVisible] = useState(true)
@@ -198,22 +198,6 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
       hasAudio: false,
       hasCaption: false,
       style,
-    }
-    const nextScenes = [...allScenes, nextScene]
-    setAllScenes(nextScenes)
-    saveToFirebase(nextScenes, nextIndex)
-    handleSceneSelect(nextIndex)
-  }
-
-  const handleAddScene = (media: { url: string; type?: "image" | "video"; title?: string }) => {
-    const nextIndex = allScenes.length
-    const nextScene: AlbumImage = {
-      id: `gen-scene-${Date.now()}`,
-      url: media.url,
-      type: media.type || "image",
-      title: media.title || `Generated Scene.${media.type === "video" ? "mp4" : "jpg"}`,
-      hasAudio: false,
-      hasCaption: false,
     }
     const nextScenes = [...allScenes, nextScene]
     setAllScenes(nextScenes)
@@ -443,7 +427,6 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
                 contentVisible={true}
                 onTabChange={(tab) => { handleLeftTabChange(tab); }}
                 onGenerateScene={handleGenerateDummyScene}
-                onAddScene={handleAddScene}
                 onAddAudio={handleAddAudio}
                 onAddCaption={handleAddCaption}
                 onClose={() => setMobileLeftOpen(false)}
@@ -501,7 +484,6 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
             contentVisible={leftPanelVisible}
             onTabChange={handleLeftTabChange}
             onGenerateScene={handleGenerateDummyScene}
-            onAddScene={handleAddScene}
             onAddAudio={handleAddAudio}
             onAddCaption={handleAddCaption}
             onClose={() => setLeftPanelVisible((visible) => !visible)}
