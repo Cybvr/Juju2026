@@ -76,12 +76,14 @@ export default function ProjectsManagement() {
         try {
             await projectService.updateProject(editingProject.id, {
                 name: editingProject.name || "",
+                category: editingProject.category || "",
                 isPublic: !!editingProject.isPublic,
                 isJujuTemplate: !!editingProject.isJujuTemplate
             })
             setProjects(projects.map(p => p.id === editingProject.id ? {
                 ...editingProject,
                 name: editingProject.name || "",
+                category: editingProject.category || "",
                 isPublic: !!editingProject.isPublic,
                 isJujuTemplate: !!editingProject.isJujuTemplate
             } : p))
@@ -95,6 +97,43 @@ export default function ProjectsManagement() {
         }
     }
 
+    const seedTemplates = async () => {
+        setIsLoading(true)
+        try {
+            const templatesToSeed = [
+                { name: "Science Explainer: Law of Gravity", category: "Education" },
+                { name: "SaaS Feature Walkthrough", category: "SaaS & Product" },
+                { name: "E-commerce Spring Sale Promo", category: "E-commerce" },
+                { name: "Employee Onboarding Intro", category: "Training & Development" },
+                { name: "Nonprofit Impact Story", category: "Nonprofits" },
+                { name: "Local Bakery Promo", category: "Local Businesses" }
+            ]
+
+            const { collection, addDoc, serverTimestamp } = await import("firebase/firestore")
+            const { db } = await import("@/lib/firebase")
+
+            for (const t of templatesToSeed) {
+                await addDoc(collection(db, "projects"), {
+                    name: t.name,
+                    category: t.category,
+                    isPublic: true,
+                    isJujuTemplate: true,
+                    thumbnail: "",
+                    userId: "system", // Or the admin's ID
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                })
+            }
+            toast.success("Templates seeded successfully!")
+            fetchProjects()
+        } catch (error) {
+            console.error("Error seeding templates:", error)
+            toast.error("Failed to seed templates")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     const filteredProjects = projects.filter(project => 
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
         project.userId.toLowerCase().includes(searchQuery.toLowerCase())
@@ -102,19 +141,24 @@ export default function ProjectsManagement() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight mb-2">Projects</h1>
-                    <p className="text-muted-foreground font-medium">Global view and management of all video projects.</p>
+                    <h1 className="text-3xl font-black text-foreground uppercase tracking-tight">Projects</h1>
+                    <p className="text-sm font-bold text-muted-foreground mt-1">Manage user projects and templates</p>
                 </div>
-                <div className="relative w-full md:w-80">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input 
-                        placeholder="Search projects or user IDs..." 
-                        className="pl-12 h-12 rounded-md bg-card/50 border-border/50 focus:ring-primary/20"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="flex items-center gap-4">
+                    <Button onClick={seedTemplates} disabled={isLoading} variant="outline" className="font-bold border-primary text-primary hover:bg-primary/10">
+                        Seed Templates
+                    </Button>
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search projects..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9 h-10 bg-secondary/50 border-border/50 rounded-lg focus-visible:ring-primary/20"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -240,6 +284,17 @@ export default function ProjectsManagement() {
                                     id="name" 
                                     value={editingProject.name || ""} 
                                     onChange={(e) => setEditingProject({...editingProject, name: e.target.value})}
+                                    className="h-12 rounded-md bg-secondary/30 border-border/50"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="category" className="text-xs uppercase font-black tracking-widest text-muted-foreground">Category</Label>
+                                <Input 
+                                    id="category" 
+                                    placeholder="e.g. Education, E-commerce..."
+                                    value={editingProject.category || ""} 
+                                    onChange={(e) => setEditingProject({...editingProject, category: e.target.value})}
                                     className="h-12 rounded-md bg-secondary/30 border-border/50"
                                 />
                             </div>

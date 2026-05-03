@@ -6,6 +6,7 @@ export interface Project {
   userId: string
   isPublic?: boolean
   isJujuTemplate?: boolean
+  category?: string
   createdAt: Date
   updatedAt: Date
 }

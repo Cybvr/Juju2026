@@ -124,9 +124,14 @@ function ProjectCard({ project, isTemplate = false }: { project: Project; isTemp
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          <Clock className="w-3 h-3" />
-          <span>{project.updatedAt instanceof Date ? project.updatedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Recently'}</span>
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            <span>{project.updatedAt instanceof Date ? project.updatedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Recently'}</span>
+          </div>
+          {project.category && (
+            <span className="bg-secondary px-2 py-0.5 rounded-md truncate max-w-[120px] text-right">{project.category}</span>
+          )}
         </div>
       </div>
     </Link>

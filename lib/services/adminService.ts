@@ -82,6 +82,7 @@ export const adminService = {
                 userId: data.userId,
                 isPublic: data.isPublic,
                 isJujuTemplate: data.isJujuTemplate,
+                category: data.category,
                 createdAt,
                 updatedAt,
             }

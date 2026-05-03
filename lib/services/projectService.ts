@@ -61,6 +61,7 @@ export const projectService = {
                 userId: data.userId,
                 isPublic: data.isPublic,
                 isJujuTemplate: data.isJujuTemplate,
+                category: data.category,
                 createdAt,
                 updatedAt,
             }
@@ -79,6 +80,9 @@ export const projectService = {
                 thumbnail: data.thumbnail,
                 thumbnailType: data.thumbnailType,
                 userId: data.userId,
+                isPublic: data.isPublic,
+                isJujuTemplate: data.isJujuTemplate,
+                category: data.category,
                 createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(),
                 updatedAt: (data.updatedAt as Timestamp)?.toDate() || new Date(),
             }
@@ -174,6 +178,7 @@ export const projectService = {
                 userId: data.userId,
                 isPublic: data.isPublic,
                 isJujuTemplate: data.isJujuTemplate,
+                category: data.category,
                 createdAt,
                 updatedAt,
             }
