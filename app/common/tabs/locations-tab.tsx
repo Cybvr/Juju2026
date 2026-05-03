@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { MapPin, History, Eye } from "lucide-react"
 import { GenerateBox, ThumbnailStrip, HistoryGallery, ThumbnailItem } from "./shared"
 import { toast } from "sonner"
@@ -11,6 +12,7 @@ interface LocationsTabProps {
   setLocationHistory: React.Dispatch<React.SetStateAction<ThumbnailItem[]>>
   setThumbnailModal: (kind: "styles" | "characters" | "locations" | "audio" | null, mode?: "picker" | "library") => void
   locationThumbnails: ThumbnailItem[]
+  onGenerate: (prompt: string) => void
 }
 
 export function LocationsTab({
@@ -20,13 +22,17 @@ export function LocationsTab({
   setLocationHistory,
   setThumbnailModal,
   locationThumbnails,
+  onGenerate,
 }: LocationsTabProps) {
+  const [prompt, setPrompt] = React.useState("A sunlit coastal market street with pastel storefronts, hanging plants, weathered tile, and a view of blue water between buildings. Preserve the same architecture, color palette, and geography across shots.")
+
   return (
     <div className="space-y-6">
       <div className="space-y-3">
         <GenerateBox
           placeholder="Describe the location..."
-          defaultValue="A sunlit coastal market street with pastel storefronts, hanging plants, weathered tile, and a view of blue water between buildings. Preserve the same architecture, color palette, and geography across shots."
+          value={prompt}
+          onChange={setPrompt}
           references={[
             {
               item: locationThumbnails.find((item) => item.name === selectedLocation) ?? locationThumbnails[0],
@@ -36,7 +42,7 @@ export function LocationsTab({
           addOptions={locationThumbnails}
           selectedAddOption={selectedLocation}
           onSelectAddOption={setActiveLocation}
-          onCreate={() => toast.info("Location generation is not yet implemented.")}
+          onCreate={() => onGenerate(prompt)}
         />
       </div>
 

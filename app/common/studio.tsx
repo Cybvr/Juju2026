@@ -47,11 +47,13 @@ import {
 import { toast } from "sonner"
 import { LeftPanel } from "@/app/common/left-panel"
 import { RightPanel } from "@/app/common/right-panel"
-import { auth, db } from "@/lib/firebase"
+import { auth, db, storage } from "@/lib/firebase"
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { onAuthStateChanged, signOut, User } from "firebase/auth"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
+import { generateImage } from "@/lib/generate-image"
 
 interface AlbumImage {
   id: string
@@ -188,21 +190,100 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
     }
   }
 
-  const handleGenerateDummyScene = (style: string) => {
-    const nextIndex = allScenes.length
-    const nextScene: AlbumImage = {
-      id: `dummy-scene-${Date.now()}`,
-      url: dummySceneImage,
-      type: "image",
-      title: `${style} ${nextIndex + 1}.jpg`,
-      hasAudio: false,
-      hasCaption: false,
-      style,
+  const handleGenerateScene = async (prompt: string, style: string): Promise<string | void> => {
+    const toastId = toast.loading("Generating scene...")
+    try {
+      const imageUrl = await generateImage(`${prompt}. Style: ${style}`);
+      
+      // Upload to Firebase Storage
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `scene_${Date.now()}.webp`, { type: "image/webp" });
+      
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+      
+      const fileRef = ref(storage, `users/${user.uid}/scenes/${file.name}`);
+      await uploadBytes(fileRef, file);
+      const permanentUrl = await getDownloadURL(fileRef);
+
+      const nextIndex = allScenes.length;
+      const nextScene: AlbumImage = {
+        id: `scene-${Date.now()}`,
+        url: permanentUrl,
+        type: "image",
+        title: `${style} ${nextIndex + 1}.jpg`,
+        hasAudio: false,
+        hasCaption: false,
+        style,
+      };
+      
+      const nextScenes = [...allScenes, nextScene];
+      setAllScenes(nextScenes);
+      saveToFirebase(nextScenes, nextIndex);
+      handleSceneSelect(nextIndex);
+      toast.success("Scene generated!", { id: toastId });
+      return permanentUrl;
+    } catch (error: any) {
+      console.error("Scene generation error:", error);
+      toast.error(error.message || "Failed to generate scene", { id: toastId });
     }
-    const nextScenes = [...allScenes, nextScene]
-    setAllScenes(nextScenes)
-    saveToFirebase(nextScenes, nextIndex)
-    handleSceneSelect(nextIndex)
+  }
+
+  const handleGenerateCharacter = async (prompt: string) => {
+    const toastId = toast.loading("Generating character...")
+    try {
+      const imageUrl = await generateImage(prompt);
+      
+      // Upload to Firebase Storage
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `character_${Date.now()}.webp`, { type: "image/webp" });
+      
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+      
+      const fileRef = ref(storage, `users/${user.uid}/characters/${file.name}`);
+      await uploadBytes(fileRef, file);
+      const permanentUrl = await getDownloadURL(fileRef);
+
+      // In a real app, we'd add this to a characters collection.
+      // For now, we'll just show it in toast or update a local state if we had one for custom characters.
+      toast.success("Character generated and saved to library!", { id: toastId });
+      
+      // We should probably return the URL or update the history in LeftPanel.
+      // Since Studio doesn't manage character history directly (it's in LeftPanel),
+      // we might need to pass this back.
+      return permanentUrl;
+    } catch (error: any) {
+      console.error("Character generation error:", error);
+      toast.error(error.message || "Failed to generate character", { id: toastId });
+    }
+  }
+
+  const handleGenerateLocation = async (prompt: string) => {
+    const toastId = toast.loading("Generating location...")
+    try {
+      const imageUrl = await generateImage(prompt);
+      
+      // Upload to Firebase Storage
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `location_${Date.now()}.webp`, { type: "image/webp" });
+      
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+      
+      const fileRef = ref(storage, `users/${user.uid}/locations/${file.name}`);
+      await uploadBytes(fileRef, file);
+      const permanentUrl = await getDownloadURL(fileRef);
+
+      toast.success("Location generated and saved to library!", { id: toastId });
+      return permanentUrl;
+    } catch (error: any) {
+      console.error("Location generation error:", error);
+      toast.error(error.message || "Failed to generate location", { id: toastId });
+    }
   }
 
   const handleSceneSelect = (index: number) => {
@@ -426,7 +507,9 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
                 activeTab={leftTab}
                 contentVisible={true}
                 onTabChange={(tab) => { handleLeftTabChange(tab); }}
-                onGenerateScene={handleGenerateDummyScene}
+                onGenerateScene={handleGenerateScene}
+                onGenerateCharacter={handleGenerateCharacter}
+                onGenerateLocation={handleGenerateLocation}
                 onAddAudio={handleAddAudio}
                 onAddCaption={handleAddCaption}
                 onClose={() => setMobileLeftOpen(false)}
@@ -483,7 +566,9 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
             activeTab={leftTab}
             contentVisible={leftPanelVisible}
             onTabChange={handleLeftTabChange}
-            onGenerateScene={handleGenerateDummyScene}
+            onGenerateScene={handleGenerateScene}
+            onGenerateCharacter={handleGenerateCharacter}
+            onGenerateLocation={handleGenerateLocation}
             onAddAudio={handleAddAudio}
             onAddCaption={handleAddCaption}
             onClose={() => setLeftPanelVisible((visible) => !visible)}

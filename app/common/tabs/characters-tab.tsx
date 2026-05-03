@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { UserRound, History, Eye } from "lucide-react"
 import { GenerateBox, ThumbnailStrip, HistoryGallery, ThumbnailItem } from "./shared"
 import { toast } from "sonner"
@@ -11,6 +12,7 @@ interface CharactersTabProps {
   setCharacterHistory: React.Dispatch<React.SetStateAction<ThumbnailItem[]>>
   setThumbnailModal: (kind: "styles" | "characters" | "locations" | "audio" | null, mode?: "picker" | "library") => void
   characterThumbnails: ThumbnailItem[]
+  onGenerate: (prompt: string) => void
 }
 
 export function CharactersTab({
@@ -20,13 +22,17 @@ export function CharactersTab({
   setCharacterHistory,
   setThumbnailModal,
   characterThumbnails,
+  onGenerate,
 }: CharactersTabProps) {
+  const [prompt, setPrompt] = React.useState("A warm, quick-witted protagonist in their late twenties with expressive eyes, short textured hair, a vintage bomber jacket, and a calm confidence. Keep the same face, outfit palette, and proportions across every scene.")
+
   return (
     <div className="space-y-6">
       <div className="space-y-3">
         <GenerateBox
           placeholder="Describe the character..."
-          defaultValue="A warm, quick-witted protagonist in their late twenties with expressive eyes, short textured hair, a vintage bomber jacket, and a calm confidence. Keep the same face, outfit palette, and proportions across every scene."
+          value={prompt}
+          onChange={setPrompt}
           references={[
             {
               item: characterThumbnails.find((item) => item.name === selectedCharacter) ?? characterThumbnails[0],
@@ -36,7 +42,7 @@ export function CharactersTab({
           addOptions={characterThumbnails}
           selectedAddOption={selectedCharacter}
           onSelectAddOption={setActiveCharacter}
-          onCreate={() => toast.info("Character generation is not yet implemented.")}
+          onCreate={() => onGenerate(prompt)}
         />
       </div>
 

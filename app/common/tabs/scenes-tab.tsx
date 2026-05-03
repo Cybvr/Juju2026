@@ -23,7 +23,7 @@ interface ScenesTabProps {
   handleDeleteDraftScene: (index: number) => void
   handleAddDraftScene: () => void
   onTabChange: (tab: string) => void
-  onGenerateScene: (style: string) => void
+  onGenerateScene: (prompt: string, style: string) => void
   setSelectedCharacter: (name: string) => void
   setSelectedLocation: (name: string) => void
   setThumbnailModal: (kind: "styles" | "characters" | "locations" | "audio" | null, mode?: "picker" | "library") => void
@@ -141,7 +141,7 @@ export function ScenesTab({
               }}
               onCreate={() => {
                 setActiveDraftScene(sceneIndex)
-                onGenerateScene(scene.style)
+                onGenerateScene(scene.prompt, scene.style)
               }}
             />
             <button

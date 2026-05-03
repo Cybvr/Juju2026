@@ -41,6 +41,8 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { auth, storage } from "@/lib/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { collection, getDocs, query, orderBy, addDoc, serverTimestamp } from "firebase/firestore"
+import { useEffect } from "react"
 import { ScenesTab } from "./tabs/scenes-tab"
 import { CharactersTab } from "./tabs/characters-tab"
 import { LocationsTab } from "./tabs/locations-tab"
@@ -108,7 +110,9 @@ interface LeftPanelProps {
   activeTab: string
   contentVisible?: boolean
   onTabChange: (tab: string) => void
-  onGenerateScene: (style: string) => void
+  onGenerateScene: (prompt: string, style: string) => Promise<void>
+  onGenerateCharacter: (prompt: string) => Promise<string | void>
+  onGenerateLocation: (prompt: string) => Promise<string | void>
   onAddAudio: (track: string) => void
   onAddCaption: (text: string) => void
   onClose?: () => void
@@ -119,23 +123,137 @@ export function LeftPanel({
   contentVisible = true,
   onTabChange,
   onGenerateScene,
+  onGenerateCharacter,
+  onGenerateLocation,
   onAddAudio,
   onAddCaption,
   onClose,
 }: LeftPanelProps) {
+  const handleGenerateCharacterInternal = async (prompt: string) => {
+    const url = await onGenerateCharacter(prompt)
+    if (url) {
+      const newItem = { name: `Gen ${Date.now()}`, image: url }
+      setCharacterHistory(prev => [newItem, ...prev])
+      setSelectedCharacter(newItem.name)
+      updateActiveSceneDraft({ character: newItem.name })
+      saveHistoryItem('characters', newItem)
+    }
+  }
+
+  const handleGenerateLocationInternal = async (prompt: string) => {
+    const url = await onGenerateLocation(prompt)
+    if (url) {
+      const newItem = { name: `Gen ${Date.now()}`, image: url }
+      setLocationHistory(prev => [newItem, ...prev])
+      setSelectedLocation(newItem.name)
+      updateActiveSceneDraft({ location: newItem.name })
+      saveHistoryItem('locations', newItem)
+    }
+  }
   const characterInputRef = useRef<HTMLInputElement>(null)
   const locationInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
   const captionInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
-  const [selectedCharacter, setSelectedCharacter] = useState(characterThumbnails[0].name)
-  const [selectedLocation, setSelectedLocation] = useState(locationThumbnails[0].name)
-  const [selectedAudioStyle, setSelectedAudioStyle] = useState(audioStyles[0].name)
-  const [selectedAudio, setSelectedAudio] = useState(audioThumbnails[0].name)
+  
+  // Library State (Loaded from Firestore)
+  const [libraryStyles, setLibraryStyles] = useState<ThumbnailItem[]>(sceneStyles)
+  const [libraryCharacters, setLibraryCharacters] = useState<ThumbnailItem[]>(characterThumbnails)
+  const [libraryLocations, setLibraryLocations] = useState<ThumbnailItem[]>(locationThumbnails)
+  const [libraryAudioStyles, setLibraryAudioStyles] = useState<ThumbnailItem[]>(audioStyles)
+  const [libraryAudio, setLibraryAudio] = useState<ThumbnailItem[]>(audioThumbnails)
+
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      try {
+        const collections = [
+          { name: 'library_styles', setter: setLibraryStyles, initial: sceneStyles },
+          { name: 'library_characters', setter: setLibraryCharacters, initial: characterThumbnails },
+          { name: 'library_locations', setter: setLibraryLocations, initial: locationThumbnails },
+          { name: 'library_audio_styles', setter: setLibraryAudioStyles, initial: audioStyles },
+          { name: 'library_audio', setter: setLibraryAudio, initial: audioThumbnails }
+        ]
+
+        for (const col of collections) {
+          const q = query(collection(db, col.name), orderBy('name', 'asc'))
+          const querySnapshot = await getDocs(q)
+          if (!querySnapshot.empty) {
+            const items = querySnapshot.docs.map(doc => doc.data() as ThumbnailItem)
+            col.setter(items)
+          } else {
+            // Seed the collection if empty
+            console.log(`Seeding collection ${col.name}...`)
+            for (const item of col.initial) {
+              await addDoc(collection(db, col.name), item)
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching or seeding library:", error)
+      }
+    }
+
+    fetchLibrary()
+  }, [])
+
+  const [selectedCharacter, setSelectedCharacter] = useState(libraryCharacters[0]?.name || "")
+  const [selectedLocation, setSelectedLocation] = useState(libraryLocations[0]?.name || "")
+  const [selectedAudioStyle, setSelectedAudioStyle] = useState(libraryAudioStyles[0]?.name || "")
+  const [selectedAudio, setSelectedAudio] = useState(libraryAudio[0]?.name || "")
   const [characterHistory, setCharacterHistory] = useState<ThumbnailItem[]>([])
   const [locationHistory, setLocationHistory] = useState<ThumbnailItem[]>([])
   const [audioHistory, setAudioHistory] = useState<ThumbnailItem[]>([])
   const [sceneHistory, setSceneHistory] = useState<ThumbnailItem[]>([])
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const user = auth.currentUser
+      if (!user) return
+
+      try {
+        const types = ['characters', 'locations', 'audio', 'scenes']
+        for (const type of types) {
+          const q = query(
+            collection(db, `users/${user.uid}/history_${type}`),
+            orderBy('createdAt', 'desc')
+          )
+          const querySnapshot = await getDocs(q)
+          const items = querySnapshot.docs.map(doc => doc.data() as ThumbnailItem)
+          if (type === 'characters') setCharacterHistory(items)
+          else if (type === 'locations') setLocationHistory(items)
+          else if (type === 'audio') setAudioHistory(items)
+          else if (type === 'scenes') setSceneHistory(items)
+        }
+      } catch (error) {
+        console.error("Error fetching history:", error)
+      }
+    }
+
+    fetchHistory()
+  }, [])
+
+  const saveHistoryItem = async (type: string, item: ThumbnailItem) => {
+    const user = auth.currentUser
+    if (!user) return
+
+    try {
+      await addDoc(collection(db, `users/${user.uid}/history_${type}`), {
+        ...item,
+        createdAt: serverTimestamp()
+      })
+    } catch (error) {
+      console.error(`Error saving ${type} history:`, error)
+    }
+  }
+
+  const handleGenerateSceneInternal = async (prompt: string, style: string) => {
+    const url = await onGenerateScene(prompt, style)
+    if (url) {
+      const newItem = { name: `Gen ${Date.now()}`, image: url }
+      setSceneHistory(prev => [newItem, ...prev])
+      saveHistoryItem('scenes', newItem)
+    }
+  }
   const [thumbnailModal, setThumbnailModal] = useState<"styles" | "characters" | "locations" | "audio" | null>(null)
   const [modalMode, setModalMode] = useState<"picker" | "library">("library")
 
@@ -155,10 +273,10 @@ export function LeftPanel({
     {
       id: "scene-1",
       name: "Scene 1",
-      style: sceneStyles[0].name,
-      character: characterThumbnails[0].name,
-      location: locationThumbnails[0].name,
-      audio: audioThumbnails[0].name,
+      style: libraryStyles[0]?.name || "",
+      character: libraryCharacters[0]?.name || "",
+      location: libraryLocations[0]?.name || "",
+      audio: libraryAudio[0]?.name || "",
       prompt: "Cinematic wide shot of two stylish characters in a vintage car driving through a palm-tree lined street in Miami. Pixar-style 3D animation, golden hour lighting, depth of field.",
     },
   ])
@@ -186,13 +304,14 @@ export function LeftPanel({
   const thumbnailModalConfig = thumbnailModal === "styles"
     ? {
       title: "Styles",
-      items: sceneStyles,
+      items: libraryStyles,
       history: sceneHistory,
       selectedName: activeSceneDraft.style,
       onSelect: (item: ThumbnailItem) => {
         updateActiveSceneDraft({ style: item.name })
         setSceneHistory(prev => {
           if (prev.find(i => i.name === item.name)) return prev
+          saveHistoryItem('scenes', item)
           return [item, ...prev]
         })
       },
@@ -200,13 +319,14 @@ export function LeftPanel({
     : thumbnailModal === "characters"
       ? {
         title: "Characters",
-        items: characterThumbnails,
+        items: libraryCharacters,
         history: characterHistory,
         selectedName: selectedCharacter,
         onSelect: (item: ThumbnailItem) => {
           setActiveCharacter(item.name)
           setCharacterHistory(prev => {
             if (prev.find(i => i.name === item.name)) return prev
+            saveHistoryItem('characters', item)
             return [item, ...prev]
           })
         },
@@ -214,13 +334,14 @@ export function LeftPanel({
       : thumbnailModal === "locations"
         ? {
           title: "Locations",
-          items: locationThumbnails,
+          items: libraryLocations,
           history: locationHistory,
           selectedName: selectedLocation,
           onSelect: (item: ThumbnailItem) => {
             setActiveLocation(item.name)
             setLocationHistory(prev => {
               if (prev.find(i => i.name === item.name)) return prev
+              saveHistoryItem('locations', item)
               return [item, ...prev]
             })
           },
@@ -228,7 +349,7 @@ export function LeftPanel({
         : thumbnailModal === "audio"
           ? {
             title: "Audio",
-            items: audioThumbnails,
+            items: libraryAudio,
             history: audioHistory,
             selectedName: selectedAudio,
             isAudio: true,
@@ -236,6 +357,7 @@ export function LeftPanel({
               setSelectedAudio(item.name)
               setAudioHistory(prev => {
                 if (prev.find(i => i.name === item.name)) return prev
+                saveHistoryItem('audio', item)
                 return [item, ...prev]
               })
             },
@@ -415,15 +537,14 @@ export function LeftPanel({
                 handleDeleteDraftScene={handleDeleteDraftScene}
                 handleAddDraftScene={handleAddDraftScene}
                 onTabChange={onTabChange}
-                onGenerateScene={onGenerateScene}
+                onGenerateScene={handleGenerateSceneInternal}
                 setSelectedCharacter={setSelectedCharacter}
                 setSelectedLocation={setSelectedLocation}
-                setThumbnailModal={handleOpenModal}
                 sceneHistory={sceneHistory}
-                characterThumbnails={characterThumbnails}
-                locationThumbnails={locationThumbnails}
-                audioThumbnails={audioThumbnails}
-                sceneStyles={sceneStyles}
+                characterThumbnails={libraryCharacters}
+                locationThumbnails={libraryLocations}
+                audioThumbnails={libraryAudio}
+                sceneStyles={libraryStyles}
               />
             )}
 
@@ -434,7 +555,8 @@ export function LeftPanel({
                 characterHistory={characterHistory}
                 setCharacterHistory={setCharacterHistory}
                 setThumbnailModal={handleOpenModal}
-                characterThumbnails={characterThumbnails}
+                characterThumbnails={libraryCharacters}
+                onGenerate={handleGenerateCharacterInternal}
               />
             )}
 
@@ -445,7 +567,8 @@ export function LeftPanel({
                 locationHistory={locationHistory}
                 setLocationHistory={setLocationHistory}
                 setThumbnailModal={handleOpenModal}
-                locationThumbnails={locationThumbnails}
+                locationThumbnails={libraryLocations}
+                onGenerate={handleGenerateLocationInternal}
               />
             )}
 
@@ -458,8 +581,8 @@ export function LeftPanel({
                 audioHistory={audioHistory}
                 setAudioHistory={setAudioHistory}
                 setThumbnailModal={handleOpenModal}
-                audioThumbnails={audioThumbnails}
-                audioStyles={audioStyles}
+                audioThumbnails={libraryAudio}
+                audioStyles={libraryAudioStyles}
                 audioInputRef={audioInputRef}
               />
             )}
