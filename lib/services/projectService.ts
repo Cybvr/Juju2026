@@ -31,20 +31,38 @@ export const projectService = {
     async getUserProjects(userId: string): Promise<Project[]> {
         const q = query(
             collection(db, "projects"),
-            where("userId", "==", userId),
-            orderBy("updatedAt", "desc")
+            where("userId", "==", userId)
         )
         const querySnapshot = await getDocs(q)
         return querySnapshot.docs.map(doc => {
             const data = doc.data()
+            let createdAt = new Date()
+            let updatedAt = new Date()
+            const rawCreatedAt = data.createdAt
+            const rawUpdatedAt = data.updatedAt
+
+            if (rawCreatedAt) {
+                if (typeof rawCreatedAt.toDate === 'function') createdAt = rawCreatedAt.toDate()
+                else if (rawCreatedAt instanceof Date) createdAt = rawCreatedAt
+                else createdAt = new Date(rawCreatedAt)
+            }
+
+            if (rawUpdatedAt) {
+                if (typeof rawUpdatedAt.toDate === 'function') updatedAt = rawUpdatedAt.toDate()
+                else if (rawUpdatedAt instanceof Date) updatedAt = rawUpdatedAt
+                else updatedAt = new Date(rawUpdatedAt)
+            }
+
             return {
                 id: doc.id,
                 name: data.name,
                 thumbnail: data.thumbnail,
                 thumbnailType: data.thumbnailType,
                 userId: data.userId,
-                createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(),
-                updatedAt: (data.updatedAt as Timestamp)?.toDate() || new Date(),
+                isPublic: data.isPublic,
+                isJujuTemplate: data.isJujuTemplate,
+                createdAt,
+                updatedAt,
             }
         })
     },
@@ -118,6 +136,46 @@ export const projectService = {
                 title: data.title || "Untitled",
                 imageCount: 1,
                 timeAgo: "Recently",
+            }
+        })
+    },
+ 
+    // Get all templates
+    async getTemplates(): Promise<Project[]> {
+        const q = query(
+            collection(db, "projects"),
+            where("isJujuTemplate", "==", true)
+        )
+        const querySnapshot = await getDocs(q)
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data()
+            let createdAt = new Date()
+            let updatedAt = new Date()
+            const rawCreatedAt = data.createdAt
+            const rawUpdatedAt = data.updatedAt
+
+            if (rawCreatedAt) {
+                if (typeof rawCreatedAt.toDate === 'function') createdAt = rawCreatedAt.toDate()
+                else if (rawCreatedAt instanceof Date) createdAt = rawCreatedAt
+                else createdAt = new Date(rawCreatedAt)
+            }
+
+            if (rawUpdatedAt) {
+                if (typeof rawUpdatedAt.toDate === 'function') updatedAt = rawUpdatedAt.toDate()
+                else if (rawUpdatedAt instanceof Date) updatedAt = rawUpdatedAt
+                else updatedAt = new Date(rawUpdatedAt)
+            }
+
+            return {
+                id: doc.id,
+                name: data.name,
+                thumbnail: data.thumbnail,
+                thumbnailType: data.thumbnailType,
+                userId: data.userId,
+                isPublic: data.isPublic,
+                isJujuTemplate: data.isJujuTemplate,
+                createdAt,
+                updatedAt,
             }
         })
     }

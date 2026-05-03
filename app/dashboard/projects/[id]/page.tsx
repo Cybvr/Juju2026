@@ -47,6 +47,8 @@ export default function ProjectPage() {
     <Studio
       projectId={projectId}
       projectName={projectName}
+      isPublic={project?.isPublic || false}
+      isJujuTemplate={project?.isJujuTemplate || false}
       images={scenes}
     />
   )

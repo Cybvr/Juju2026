@@ -97,7 +97,7 @@ export function ScenesTab({
               onChange={(value) => updateSceneDraft(sceneIndex, { prompt: value })}
               references={[
                 {
-                  item: sceneCharacterItem,
+                  item: sceneCharacterItem || { name: 'Select Character', image: '' },
                   icon: UserRound,
                   onClick: () => {
                     setActiveDraftScene(sceneIndex)
@@ -105,7 +105,7 @@ export function ScenesTab({
                   },
                 },
                 {
-                  item: sceneLocationItem,
+                  item: sceneLocationItem || { name: 'Select Location', image: '' },
                   icon: MapPin,
                   onClick: () => {
                     setActiveDraftScene(sceneIndex)
@@ -113,7 +113,7 @@ export function ScenesTab({
                   },
                 },
                 {
-                  item: sceneAudioItem,
+                  item: sceneAudioItem || { name: 'Select Audio', image: '' },
                   icon: Music,
                   onClick: () => {
                     setActiveDraftScene(sceneIndex)
@@ -121,7 +121,7 @@ export function ScenesTab({
                   },
                 },
                 {
-                  item: sceneStyles.find((s) => s.name === scene.style) ?? sceneStyles[0],
+                  item: sceneStyles.find((s) => s.name === scene.style) ?? sceneStyles[0] ?? { name: 'Select Style', image: '' },
                   icon: Film,
                   onClick: () => {
                     setActiveDraftScene(sceneIndex)

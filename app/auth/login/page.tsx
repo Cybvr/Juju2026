@@ -3,7 +3,8 @@
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Loader2, PlayCircle, Wand2 } from "lucide-react"
-import { auth } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore"
 import {
     signInWithPopup,
     signInWithRedirect,
@@ -18,11 +19,28 @@ export default function LoginPage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
 
+    const syncUser = async (user: any) => {
+        const userRef = doc(db, "users", user.uid)
+        const userSnap = await getDoc(userRef)
+        
+        if (!userSnap.exists()) {
+            await setDoc(userRef, {
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                plan: "free",
+                role: "user",
+                createdAt: serverTimestamp(),
+            })
+        }
+    }
+
     useEffect(() => {
         const checkRedirect = async () => {
             try {
                 const result = await getRedirectResult(auth)
                 if (result) {
+                    await syncUser(result.user)
                     toast.success("Successfully logged in!")
                     router.push("/dashboard")
                 }
@@ -38,7 +56,8 @@ export default function LoginPage() {
         setIsLoading(true)
         const provider = new GoogleAuthProvider()
         try {
-            await signInWithPopup(auth, provider)
+            const result = await signInWithPopup(auth, provider)
+            await syncUser(result.user)
             toast.success("Logged in with Google")
             router.push("/dashboard")
         } catch (error: any) {

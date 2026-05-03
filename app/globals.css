@@ -62,7 +62,7 @@
 
 
 @theme inline {
-  --font-sans: var(--font-syne), 'Geist', 'Geist Fallback';
+  --font-sans: var(--font-outfit), 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --font-serif: 'Playfair Display', 'Times New Roman', serif;
   --color-background: var(--background);
@@ -141,8 +141,8 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-syne), sans-serif;
+    @apply bg-background text-foreground font-sans;
+    font-family: var(--font-outfit), sans-serif;
     overflow-x: hidden;
     width: 100%;
   }

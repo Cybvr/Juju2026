@@ -4,6 +4,8 @@ export interface Project {
   thumbnail: string
   thumbnailType?: "image" | "video"
   userId: string
+  isPublic?: boolean
+  isJujuTemplate?: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -24,6 +26,7 @@ export interface User {
   displayName: string
   photoURL?: string
   plan: "free" | "pro" | "enterprise"
+  role: "admin" | "user"
   createdAt: Date
 }
 export interface GalleryImage {

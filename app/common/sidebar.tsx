@@ -1,14 +1,15 @@
 "use client"
 
-import { Plus, Menu, LogOut, Settings, CreditCard, Sun, Moon, Sparkles, LayoutGrid } from "lucide-react"
+import { Plus, Menu, LogOut, Settings, CreditCard, Sun, Moon, Sparkles, LayoutGrid, Shield, Users, Video } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import type { Project } from "./types"
-import { auth } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
 import { onAuthStateChanged, signOut, User } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
 import { useTheme } from "next-themes"
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ interface SidebarProps {
 export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
@@ -38,8 +40,14 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
 
   useEffect(() => {
     setMounted(true)
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user)
+      if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid))
+        setIsAdmin(userDoc.exists() && userDoc.data().role === "admin")
+      } else {
+        setIsAdmin(false)
+      }
     })
     return () => unsubscribe()
   }, [])
@@ -96,63 +104,128 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
       </div>
 
       {/* New Project Button */}
-      <div className="px-4 mb-6">
-        <Button
-          onClick={handleNewProject}
-          className={cn(
-            "w-full h-12 rounded-2xl bg-foreground text-background font-bold shadow-xl shadow-foreground/10 hover:bg-foreground/90 hover:shadow-foreground/20 transition-all",
-            collapsed ? "px-0" : "px-4 gap-2"
-          )}
-        >
-          <Plus className="w-5 h-5" />
-          {!collapsed && <span>New Video Project</span>}
-        </Button>
-      </div>
+      {!pathname.startsWith("/admin") && (
+        <div className="px-4 mb-6">
+          <Button
+            onClick={handleNewProject}
+            className={cn(
+              "w-full h-12 rounded-2xl bg-foreground text-background font-bold shadow-xl shadow-foreground/10 hover:bg-foreground/90 hover:shadow-foreground/20 transition-all",
+              collapsed ? "px-0" : "px-4 gap-2"
+            )}
+          >
+            <Plus className="w-5 h-5" />
+            {!collapsed && <span>New Video Project</span>}
+          </Button>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-4 space-y-8 custom-scrollbar">
-        {/* Main Links */}
-
-        {/* Projects List */}
-        <div>
-          {!collapsed && (
-            <div className="flex items-center justify-between px-3 mb-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">My Videos</p>
-              <Sparkles className="w-3 h-3 text-primary animate-pulse" />
-            </div>
-          )}
+        {pathname.startsWith("/admin") && isAdmin ? (
+          /* Admin Navigation */
           <div className="space-y-1">
-            {projects.map((project) => (
+            {!collapsed && (
+              <div className="flex items-center justify-between px-3 mb-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-amber-500/80">Admin Navigation</p>
+                <Shield className="w-3 h-3 text-amber-500 animate-pulse" />
+              </div>
+            )}
+            <Button
+              asChild
+              variant="ghost"
+              className={cn(
+                "h-auto w-full justify-start gap-3 rounded-2xl px-3 py-2.5 text-muted-foreground transition-all duration-300 group hover:bg-amber-500/10 hover:text-amber-500",
+                pathname === "/admin" && "bg-amber-500/10 text-amber-500"
+              )}
+            >
+              <Link href="/admin">
+                <LayoutGrid className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span className="truncate text-sm font-bold">Dashboard</span>}
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              className={cn(
+                "h-auto w-full justify-start gap-3 rounded-2xl px-3 py-2.5 text-muted-foreground transition-all duration-300 group hover:bg-amber-500/10 hover:text-amber-500",
+                pathname === "/admin/users" && "bg-amber-500/10 text-amber-500"
+              )}
+            >
+              <Link href="/admin/users">
+                <Users className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span className="truncate text-sm font-bold">Users</span>}
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              className={cn(
+                "h-auto w-full justify-start gap-3 rounded-2xl px-3 py-2.5 text-muted-foreground transition-all duration-300 group hover:bg-amber-500/10 hover:text-amber-500",
+                pathname === "/admin/projects" && "bg-amber-500/10 text-amber-500"
+              )}
+            >
+              <Link href="/admin/projects">
+                <Video className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span className="truncate text-sm font-bold">Projects</span>}
+              </Link>
+            </Button>
+            
+            {/* Link back to app */}
+            <div className="pt-4 border-t border-border/20 mt-4">
               <Button
                 asChild
                 variant="ghost"
-                key={project.id}
-                className={cn(
-                  "h-auto w-full justify-start gap-3 rounded-2xl px-3 py-2.5 text-muted-foreground transition-all duration-300 group hover:bg-secondary hover:text-foreground",
-                  activeProjectId === project.id
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "text-muted-foreground"
-                )}
+                className="h-auto w-full justify-start gap-3 rounded-2xl px-3 py-2.5 text-muted-foreground transition-all duration-300 group hover:bg-secondary hover:text-foreground"
               >
-                <Link href={`/dashboard/projects/${project.id}`}>
-                  <div className={cn(
-                    "w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border border-border/50 group-hover:scale-110 transition-transform",
-                    activeProjectId === project.id && "border-primary/30"
-                  )}>
-                    <Image
-                      src={project.thumbnail || "/images/juju.png"}
-                      alt={project.name}
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {!collapsed && <span className="truncate text-sm font-medium">{project.name}</span>}
+                <Link href="/dashboard">
+                  <Sparkles className="w-5 h-5 flex-shrink-0 text-primary" />
+                  {!collapsed && <span className="truncate text-sm font-bold">Back to App</span>}
                 </Link>
               </Button>
-            ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          /* User Navigation (Projects List) */
+          <div>
+            {!collapsed && (
+              <div className="flex items-center justify-between px-3 mb-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">My Videos</p>
+                <Sparkles className="w-3 h-3 text-primary animate-pulse" />
+              </div>
+            )}
+            <div className="space-y-1">
+              {projects.map((project) => (
+                <Button
+                  asChild
+                  variant="ghost"
+                  key={project.id}
+                  className={cn(
+                    "h-auto w-full justify-start gap-3 rounded-2xl px-3 py-2.5 text-muted-foreground transition-all duration-300 group hover:bg-secondary hover:text-foreground",
+                    activeProjectId === project.id
+                      ? "bg-primary/10 text-primary border border-primary/20"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <Link href={`/dashboard/projects/${project.id}`}>
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border border-border/50 group-hover:scale-110 transition-transform",
+                      activeProjectId === project.id && "border-primary/30"
+                    )}>
+                      <Image
+                        src={project.thumbnail || "/images/juju.png"}
+                        alt={project.name}
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {!collapsed && <span className="truncate text-sm font-medium">{project.name}</span>}
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* User Section */}
@@ -183,7 +256,10 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
                 </div>
                 {!collapsed && (
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm truncate text-foreground">{user?.displayName || "User"}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-bold text-sm truncate text-foreground">{user?.displayName || "User"}</p>
+                      {isAdmin && <Shield className="w-3 h-3 text-amber-500" />}
+                    </div>
                     <p className="text-[10px] font-bold text-muted-foreground truncate uppercase tracking-tight">{user?.email}</p>
                   </div>
                 )}
@@ -193,6 +269,12 @@ export function Sidebar({ projects, activeProjectId, onNewProject }: SidebarProp
               <DropdownMenuLabel className="font-bold px-3 py-2 text-xs uppercase tracking-widest text-muted-foreground">Account Settings</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
               <DropdownMenuGroup className="p-1">
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => router.push("/admin")} className="rounded-xl p-2.5 cursor-pointer text-amber-500 focus:bg-amber-500/10 focus:text-amber-500">
+                    <Shield className="mr-3 h-4 w-4" />
+                    <span className="font-bold">Admin Dashboard</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => router.push("/dashboard/account")} className="rounded-xl p-2.5 cursor-pointer">
                   <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">Workspace Settings</span>

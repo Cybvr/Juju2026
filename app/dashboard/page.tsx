@@ -47,11 +47,95 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
+import { onAuthStateChanged } from "firebase/auth"
+
+function ProjectCard({ project, isTemplate = false }: { project: Project; isTemplate?: boolean }) {
+  return (
+    <Link
+      href={`/dashboard/projects/${project.id}`}
+      className="group bg-card overflow-hidden border border-border rounded-2xl"
+    >
+      <div className="relative aspect-[16/10] p-2 pb-0">
+        <div className="relative h-full w-full overflow-hidden rounded-xl bg-muted">
+          {project.thumbnail && project.thumbnailType !== "video" ? (
+            <Image
+              src={project.thumbnail}
+              alt={project.name}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/50 border-b border-border/50">
+              <Video className="w-8 h-8 text-muted-foreground/20" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          {isTemplate && (
+            <div className="absolute top-4 left-4 bg-amber-500 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md tracking-widest shadow-lg">
+              Template
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xl font-bold text-card-foreground truncate transition-colors">
+            {project.name}
+          </h3>
+          {!isTemplate && (
+            <div className="flex items-center gap-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-md text-muted-foreground hover:bg-secondary"
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40 rounded-lg">
+                  <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Rename coming soon") }}>
+                    <Pencil className="w-3.5 h-3.5" />
+                    Rename
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Share coming soon") }}>
+                    <Share2 className="w-3.5 h-3.5" />
+                    Share
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 font-bold text-xs text-destructive focus:text-destructive" onClick={(e) => { e.preventDefault(); toast.error("Delete coming soon") }}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <Clock className="w-3 h-3" />
+          <span>{project.updatedAt instanceof Date ? project.updatedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Recently'}</span>
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
+  const [templates, setTemplates] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
@@ -70,19 +154,35 @@ export default function DashboardPage() {
   }, [searchParams])
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      if (auth.currentUser) {
-        try {
-          const userProjects = await projectService.getUserProjects(auth.currentUser.uid)
-          setProjects(userProjects)
-        } catch (error) {
-          console.error("Error fetching projects:", error)
-        } finally {
-          setIsLoading(false)
-        }
+    const fetchData = async (uid: string) => {
+      try {
+        const [userProjects, allTemplates] = await Promise.all([
+          projectService.getUserProjects(uid),
+          projectService.getTemplates()
+        ])
+        console.log(`Fetched ${userProjects.length} projects and ${allTemplates.length} templates`)
+        setProjects(userProjects)
+        setTemplates(allTemplates)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        toast.error("Failed to load dashboard data")
+      } finally {
+        setIsLoading(false)
       }
     }
-    fetchProjects()
+
+    if (auth.currentUser) {
+      fetchData(auth.currentUser.uid)
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchData(user.uid)
+      } else {
+        setIsLoading(false)
+      }
+    })
+    return () => unsubscribe()
   }, [])
 
   const handleCreateProject = async () => {
@@ -160,117 +260,77 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-          <div className="relative w-full max-w-md group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <Input
-              type="text"
-              placeholder="Search projects..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-14 pl-14 pr-6 rounded-xl bg-card border border-border outline-none focus:border-primary transition-all font-medium"
-            />
+        {/* Tabs & Search */}
+        <Tabs defaultValue="my-videos" className="w-full">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+            <TabsList className="bg-card border border-border p-1 rounded-xl h-auto">
+                <TabsTrigger 
+                  value="my-videos" 
+                  className="rounded-lg px-6 py-2.5 font-bold text-sm data-[state=active]:bg-foreground data-[state=active]:text-background transition-all flex items-center gap-2"
+                >
+                  My Videos
+                  {projects.length > 0 && <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-md">{projects.length}</span>}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="templates" 
+                  className="rounded-lg px-6 py-2.5 font-bold text-sm data-[state=active]:bg-foreground data-[state=active]:text-background transition-all flex items-center gap-2"
+                >
+                  Templates
+                  {templates.length > 0 && <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-md">{templates.length}</span>}
+                </TabsTrigger>
+            </TabsList>
+
+            <div className="relative w-full max-w-md group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-14 pl-14 pr-6 rounded-xl bg-card border border-border outline-none focus:border-primary transition-all font-medium"
+              />
+            </div>
           </div>
 
+          <TabsContent value="my-videos" className="mt-0 border-none p-0 outline-none">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
 
-        </div>
-
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/dashboard/projects/${project.id}`}
-              className="group bg-card overflow-hidden border border-border rounded-2xl"
-            >
-              {/* Thumbnail Container */}
-              <div className="relative aspect-[16/10] p-2 pb-0">
-                <div className="relative h-full w-full overflow-hidden rounded-xl bg-muted">
-                  {project.thumbnail && project.thumbnailType !== "video" ? (
-                    <Image
-                      src={project.thumbnail}
-                      alt={project.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : project.thumbnailType === "video" ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50 border-b border-border/50">
-                      <Video className="w-8 h-8 text-muted-foreground/30" />
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50 border-b border-border/50">
-                      <Video className="w-8 h-8 text-muted-foreground/20" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-
-                </div>
-              </div>
-
-              {/* Project Info */}
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xl font-bold text-card-foreground truncate transition-colors">
-                    {project.name}
-                  </h3>
-                  <div className="flex items-center gap-1">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-md text-muted-foreground hover:bg-secondary"
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40 rounded-lg">
-                        <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Rename coming soon") }}>
-                          <Pencil className="w-3.5 h-3.5" />
-                          Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Share coming soon") }}>
-                          <Share2 className="w-3.5 h-3.5" />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2 font-bold text-xs text-destructive focus:text-destructive" onClick={(e) => { e.preventDefault(); toast.error("Delete coming soon") }}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {projects.length === 0 && (
+                <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
+                  <div className="w-24 h-24 bg-secondary flex items-center justify-center mb-8 border border-border">
+                    <Plus className="w-10 h-10 text-primary" />
                   </div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">No projects found</h2>
+                  <p className="text-muted-foreground max-w-xs mb-8">Start your first video creation and watch the magic happen.</p>
+                  <Button
+                    onClick={() => setShowNewProjectModal(true)}
+                    className="h-auto rounded-lg bg-foreground px-8 py-6 text-lg font-bold text-background hover:bg-foreground/90"
+                  >
+                    Create First Video
+                  </Button>
                 </div>
-
-                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest">
-                  <Clock className="w-3 h-3" />
-                  <span>Mar 4</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-
-          {/* Empty State / Call to Action */}
-          {projects.length === 0 && (
-            <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
-              <div className="w-24 h-24 bg-secondary flex items-center justify-center mb-8 border border-border">
-                <Plus className="w-10 h-10 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">No projects found</h2>
-              <p className="text-muted-foreground max-w-xs mb-8">Start your first video creation and watch the magic happen.</p>
-              <Button
-                onClick={() => setShowNewProjectModal(true)}
-                className="h-auto rounded-lg bg-foreground px-8 py-6 text-lg font-bold text-background hover:bg-foreground/90"
-              >
-                Create First Video
-              </Button>
+              )}
             </div>
-          )}
-        </div>
+          </TabsContent>
+
+          <TabsContent value="templates" className="mt-0 border-none p-0 outline-none">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {templates.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((project) => (
+                <ProjectCard key={project.id} project={project} isTemplate />
+              ))}
+
+              {templates.length === 0 && (
+                <div className="col-span-full py-20 flex flex-col items-center justify-center text-center text-muted-foreground">
+                  <Video className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="font-medium">No templates available yet.</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Dialog open={showNewProjectModal} onOpenChange={setShowNewProjectModal}>

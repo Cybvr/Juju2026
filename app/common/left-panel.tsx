@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -35,11 +36,12 @@ import {
   Upload,
   Plus,
   Trash2,
-  PanelLeftClose
+  PanelLeftClose,
+  LayoutTemplate
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { auth, storage } from "@/lib/firebase"
+import { auth, storage, db } from "@/lib/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { collection, getDocs, query, orderBy, addDoc, serverTimestamp } from "firebase/firestore"
 import { useEffect } from "react"
@@ -49,6 +51,7 @@ import { LocationsTab } from "./tabs/locations-tab"
 import { AudioTab } from "./tabs/audio-tab"
 import { CaptionsTab } from "./tabs/captions-tab"
 import { EffectsTab } from "./tabs/effects-tab"
+import { TemplatesTab } from "./tabs/templates-tab"
 import { ThumbnailItem, ThumbnailStrip, AudioList } from "./tabs/shared"
 
 interface AlbumImage {
@@ -61,48 +64,6 @@ interface AlbumImage {
   style?: string
 }
 
-const sceneStyles = [
-  { name: "Pixar-style 3D", image: "/images/marketing/joyful.webp" },
-  { name: "Anime", image: "/images/marketing/adventure.webp" },
-  { name: "Claymation", image: "/images/marketing/wizard.webp" },
-  { name: "Comic book", image: "/images/marketing/artist.webp" },
-  { name: "Watercolor", image: "/images/marketing/cloud.webp" },
-  { name: "Cinematic realistic", image: "/images/marketing/1.webp" },
-]
-
-const characterThumbnails = [
-  { name: "Kid", image: "/images/dashboard/Characters/Albanian%20Boy.png" },
-  { name: "Woman", image: "/images/dashboard/Characters/Nigerian%20Woman.png" },
-  { name: "Man", image: "/images/dashboard/Characters/Chinese%20Man.png" },
-  { name: "Elder", image: "/images/dashboard/Characters/Indian%20Elder.png" },
-  { name: "Monster", image: "/images/dashboard/Characters/Purple%20Monster%20v5.png" },
-  { name: "Robot", image: "/images/dashboard/Characters/White%20Robot.png" },
-]
-
-const locationThumbnails = [
-  { name: "Modern office", image: "/images/dashboard/locations/Pixar%20Modern%20Office.png" },
-  { name: "Classroom", image: "/images/dashboard/locations/Pixar%20Classroom.png" },
-  { name: "Retail store", image: "/images/dashboard/locations/Pixar%20Retail%20Store.png" },
-  { name: "Home", image: "/images/dashboard/locations/Pixar%20Home%20Interior.png" },
-  { name: "Enchanted forest", image: "/images/dashboard/locations/Pixar%20Enchanted%20Forest.png" },
-  { name: "City street", image: "/images/dashboard/locations/Pixar%20City%20Street.png" },
-]
-
-const audioStyles = [
-  { name: "Cinematic", image: "/images/marketing/1.webp" },
-  { name: "Lo-fi", image: "/images/marketing/cloud.webp" },
-  { name: "Orchestral", image: "/images/marketing/adventure.webp" },
-  { name: "Upbeat", image: "/images/marketing/joyful.webp" },
-  { name: "Ambient", image: "/images/marketing/2.webp" },
-  { name: "Playful", image: "/images/marketing/wizard.webp" },
-]
-
-const audioThumbnails = [
-  { name: "Trailer score", image: "/images/marketing/adventure.webp" },
-  { name: "Soft piano", image: "/images/marketing/cloud.webp" },
-  { name: "Kids theme", image: "/images/marketing/joyful.webp" },
-  { name: "Product beat", image: "/images/marketing/3.webp" },
-]
 
 
 interface LeftPanelProps {
@@ -129,6 +90,7 @@ export function LeftPanel({
   onAddCaption,
   onClose,
 }: LeftPanelProps) {
+  const router = useRouter()
   const handleGenerateCharacterInternal = async (prompt: string) => {
     const url = await onGenerateCharacter(prompt)
     if (url) {
@@ -157,21 +119,21 @@ export function LeftPanel({
   const [isUploading, setIsUploading] = useState(false)
   
   // Library State (Loaded from Firestore)
-  const [libraryStyles, setLibraryStyles] = useState<ThumbnailItem[]>(sceneStyles)
-  const [libraryCharacters, setLibraryCharacters] = useState<ThumbnailItem[]>(characterThumbnails)
-  const [libraryLocations, setLibraryLocations] = useState<ThumbnailItem[]>(locationThumbnails)
-  const [libraryAudioStyles, setLibraryAudioStyles] = useState<ThumbnailItem[]>(audioStyles)
-  const [libraryAudio, setLibraryAudio] = useState<ThumbnailItem[]>(audioThumbnails)
+  const [libraryStyles, setLibraryStyles] = useState<ThumbnailItem[]>([])
+  const [libraryCharacters, setLibraryCharacters] = useState<ThumbnailItem[]>([])
+  const [libraryLocations, setLibraryLocations] = useState<ThumbnailItem[]>([])
+  const [libraryAudioStyles, setLibraryAudioStyles] = useState<ThumbnailItem[]>([])
+  const [libraryAudio, setLibraryAudio] = useState<ThumbnailItem[]>([])
 
   useEffect(() => {
     const fetchLibrary = async () => {
       try {
         const collections = [
-          { name: 'library_styles', setter: setLibraryStyles, initial: sceneStyles },
-          { name: 'library_characters', setter: setLibraryCharacters, initial: characterThumbnails },
-          { name: 'library_locations', setter: setLibraryLocations, initial: locationThumbnails },
-          { name: 'library_audio_styles', setter: setLibraryAudioStyles, initial: audioStyles },
-          { name: 'library_audio', setter: setLibraryAudio, initial: audioThumbnails }
+          { name: 'library_styles', setter: setLibraryStyles },
+          { name: 'library_characters', setter: setLibraryCharacters },
+          { name: 'library_locations', setter: setLibraryLocations },
+          { name: 'library_audio_styles', setter: setLibraryAudioStyles },
+          { name: 'library_audio', setter: setLibraryAudio }
         ]
 
         for (const col of collections) {
@@ -180,16 +142,10 @@ export function LeftPanel({
           if (!querySnapshot.empty) {
             const items = querySnapshot.docs.map(doc => doc.data() as ThumbnailItem)
             col.setter(items)
-          } else {
-            // Seed the collection if empty
-            console.log(`Seeding collection ${col.name}...`)
-            for (const item of col.initial) {
-              await addDoc(collection(db, col.name), item)
-            }
           }
         }
       } catch (error) {
-        console.error("Error fetching or seeding library:", error)
+        console.error("Error fetching library:", error)
       }
     }
 
@@ -468,6 +424,7 @@ export function LeftPanel({
         <TooltipProvider delayDuration={250}>
           {[
             { id: 'scenes', icon: Film, label: 'Scenes' },
+            { id: 'templates', icon: LayoutTemplate, label: 'Templates' },
             { id: 'characters', icon: UserRound, label: 'Character' },
             { id: 'locations', icon: MapPin, label: 'Locations' },
             { id: 'audio', icon: Music, label: 'Audio' },
@@ -545,6 +502,15 @@ export function LeftPanel({
                 locationThumbnails={libraryLocations}
                 audioThumbnails={libraryAudio}
                 sceneStyles={libraryStyles}
+                setThumbnailModal={handleOpenModal}
+              />
+            )}
+
+            {activeTab === 'templates' && (
+              <TemplatesTab
+                onSelectTemplate={(template) => {
+                  router.push(`/dashboard/projects/${template.id}`)
+                }}
               />
             )}
 

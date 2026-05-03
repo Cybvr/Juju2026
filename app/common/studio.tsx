@@ -42,7 +42,8 @@ import {
   FileUser,
   PanelLeft,
   PanelRight,
-  X,
+  Globe,
+  LayoutTemplate,
 } from "lucide-react"
 import { toast } from "sonner"
 import { LeftPanel } from "@/app/common/left-panel"
@@ -68,11 +69,15 @@ interface AlbumImage {
 interface StudioProps {
   projectId: string
   projectName: string
+  isPublic: boolean
+  isJujuTemplate: boolean
   images: AlbumImage[]
 }
 
-export function Studio({ projectId, projectName, images }: StudioProps) {
+export function Studio({ projectId, projectName, isPublic, isJujuTemplate, images }: StudioProps) {
   const [allScenes, setAllScenes] = useState<AlbumImage[]>(images)
+  const [isPublicLocal, setIsPublicLocal] = useState(isPublic)
+  const [isTemplateLocal, setIsTemplateLocal] = useState(isJujuTemplate)
   const scenes = allScenes
   const [aspectRatio, setAspectRatio] = useState<"landscape" | "portrait" | "square">("landscape")
   const [isPlaying, setIsPlaying] = useState(false)
@@ -97,7 +102,41 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
   useEffect(() => {
     setAllScenes(images)
-  }, [images])
+    setIsPublicLocal(isPublic)
+    setIsTemplateLocal(isJujuTemplate)
+  }, [images, isPublic, isJujuTemplate])
+
+  const togglePublic = async () => {
+    if (!projectId) return
+    const newValue = !isPublicLocal
+    setIsPublicLocal(newValue)
+    try {
+      await updateDoc(doc(db, "projects", projectId), {
+        isPublic: newValue,
+        updatedAt: serverTimestamp()
+      })
+      toast.success(newValue ? "Project is now public" : "Project is now private")
+    } catch (error) {
+      setIsPublicLocal(!newValue)
+      toast.error("Failed to update privacy settings")
+    }
+  }
+
+  const toggleTemplate = async () => {
+    if (!projectId) return
+    const newValue = !isTemplateLocal
+    setIsTemplateLocal(newValue)
+    try {
+      await updateDoc(doc(db, "projects", projectId), {
+        isJujuTemplate: newValue,
+        updatedAt: serverTimestamp()
+      })
+      toast.success(newValue ? "Marked as JujuTemplate" : "Removed from JujuTemplates")
+    } catch (error) {
+      setIsTemplateLocal(!newValue)
+      toast.error("Failed to update template status")
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -362,7 +401,7 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem onClick={() => router.push("/dashboard")} className="gap-2 text-sm font-medium">
                 <Home className="h-4 w-4" />
-                Home
+                Back home
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => saveToFirebase(allScenes)} className="gap-2 text-sm font-medium">
                 <Save className="h-4 w-4" />
@@ -387,10 +426,51 @@ export function Studio({ projectId, projectName, images }: StudioProps) {
 
           <div className="flex min-w-0 items-center gap-2">
             <h1 className="max-w-20 truncate text-sm font-medium tracking-tight text-white sm:max-w-64">{projectName}</h1>
+            
+            <div className="flex items-center gap-1.5 ml-2 border-l border-border/50 pl-3">
+              <TooltipProvider delayDuration={250}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={togglePublic}
+                      className={cn(
+                        "h-8 w-8 rounded-lg transition-all duration-300",
+                        isPublicLocal ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary"
+                      )}
+                    >
+                      <Globe className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{isPublicLocal ? "Public" : "Private"}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider delayDuration={250}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleTemplate}
+                      className={cn(
+                        "h-8 w-8 rounded-lg transition-all duration-300",
+                        isTemplateLocal ? "text-amber-500 bg-amber-500/10" : "text-muted-foreground hover:bg-secondary"
+                      )}
+                    >
+                      <LayoutTemplate className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{isTemplateLocal ? "JujuTemplate" : "Mark as Template"}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
             <TooltipProvider delayDuration={250}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="hidden h-6 w-6 items-center justify-center rounded-full bg-white/5 text-muted-foreground sm:flex">
+                  <div className="hidden h-6 w-6 items-center justify-center rounded-full bg-white/5 text-muted-foreground sm:flex ml-1">
                     <div className="relative">
                       <Cloud className="h-3 w-3" />
                       <Check className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-primary" />
