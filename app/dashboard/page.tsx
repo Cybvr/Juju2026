@@ -25,7 +25,8 @@ import {
   Video,
   Pencil,
   Share2,
-  Trash2
+  Trash2,
+  Copy
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -55,9 +56,73 @@ import {
 } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { onAuthStateChanged } from "firebase/auth"
 
-function ProjectCard({ project, isTemplate = false }: { project: Project; isTemplate?: boolean }) {
+function ProjectCard({ project, isTemplate = false, onSelectTemplate, onDeleteProject }: { project: Project; isTemplate?: boolean; onSelectTemplate?: (p: Project) => void; onDeleteProject?: (id: string) => void }) {
+  if (isTemplate) {
+    return (
+      <div
+        onClick={() => onSelectTemplate?.(project)}
+        className="group bg-card overflow-hidden border border-border rounded-2xl cursor-pointer hover:border-primary/50 transition-all relative"
+      >
+        <div className="relative aspect-[16/10] p-2 pb-0">
+          <div className="relative h-full w-full overflow-hidden rounded-xl bg-muted">
+            {project.thumbnail && project.thumbnailType !== "video" ? (
+              <Image
+                src={project.thumbnail}
+                alt={project.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/50 border-b border-border/50">
+                <Video className="w-8 h-8 text-muted-foreground/20" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            <div className="absolute top-4 left-4 bg-amber-500 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md tracking-widest shadow-lg">
+              Template
+            </div>
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div className="bg-primary text-primary-foreground font-black px-6 py-3 rounded-xl flex items-center gap-2 shadow-xl scale-95 group-hover:scale-100 transition-transform">
+                <Copy className="w-5 h-5" />
+                Copy Template
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xl font-bold text-card-foreground truncate transition-colors">
+              {project.name}
+            </h3>
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>{project.updatedAt instanceof Date ? project.updatedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Recently'}</span>
+            </div>
+            {project.category && (
+              <span className="bg-secondary px-2 py-0.5 rounded-md truncate max-w-[120px] text-right">{project.category}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Link
       href={`/dashboard/projects/${project.id}`}
@@ -78,11 +143,6 @@ function ProjectCard({ project, isTemplate = false }: { project: Project; isTemp
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          {isTemplate && (
-            <div className="absolute top-4 left-4 bg-amber-500 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md tracking-widest shadow-lg">
-              Template
-            </div>
-          )}
         </div>
       </div>
 
@@ -91,37 +151,35 @@ function ProjectCard({ project, isTemplate = false }: { project: Project; isTemp
           <h3 className="text-xl font-bold text-card-foreground truncate transition-colors">
             {project.name}
           </h3>
-          {!isTemplate && (
-            <div className="flex items-center gap-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-md text-muted-foreground hover:bg-secondary"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40 rounded-lg">
-                  <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Rename coming soon") }}>
-                    <Pencil className="w-3.5 h-3.5" />
-                    Rename
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Share coming soon") }}>
-                    <Share2 className="w-3.5 h-3.5" />
-                    Share
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 font-bold text-xs text-destructive focus:text-destructive" onClick={(e) => { e.preventDefault(); toast.error("Delete coming soon") }}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-md text-muted-foreground hover:bg-secondary"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40 rounded-lg">
+                <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Rename coming soon") }}>
+                  <Pencil className="w-3.5 h-3.5" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 font-bold text-xs" onClick={(e) => { e.preventDefault(); toast.info("Share coming soon") }}>
+                  <Share2 className="w-3.5 h-3.5" />
+                  Share
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 font-bold text-xs text-destructive focus:text-destructive" onClick={(e) => { e.preventDefault(); onDeleteProject?.(project.id) }}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -138,6 +196,7 @@ function ProjectCard({ project, isTemplate = false }: { project: Project; isTemp
   )
 }
 
+
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [templates, setTemplates] = useState<Project[]>([])
@@ -148,6 +207,8 @@ export default function DashboardPage() {
   const [selectedMode, setSelectedMode] = useState<"guide" | "studio">("guide")
   const [selectedFormat, setSelectedFormat] = useState<"landscape" | "portrait" | "square">("landscape")
   const [isCreating, setIsCreating] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null)
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null)
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -204,6 +265,33 @@ export default function DashboardPage() {
       toast.error("Failed to create project")
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  const handleCopyTemplate = async (templateId: string) => {
+    if (!auth.currentUser) return
+    const toastId = toast.loading("Copying template...")
+    try {
+      const newProjectId = await projectService.copyProject(auth.currentUser.uid, templateId)
+      toast.success("Template copied successfully!", { id: toastId })
+      router.push(`/dashboard/projects/${newProjectId}`)
+    } catch (error) {
+      console.error("Error copying template:", error)
+      toast.error("Failed to copy template", { id: toastId })
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    const toastId = toast.loading("Deleting project...")
+    try {
+      await projectService.deleteProject(projectId)
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+      toast.success("Project deleted successfully", { id: toastId })
+    } catch (error) {
+      console.error("Error deleting project:", error)
+      toast.error("Failed to delete project", { id: toastId })
+    } finally {
+      setProjectToDelete(null)
     }
   }
 
@@ -300,7 +388,7 @@ export default function DashboardPage() {
           <TabsContent value="my-videos" className="mt-0 border-none p-0 outline-none">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard key={project.id} project={project} onDeleteProject={setProjectToDelete} />
               ))}
 
               {projects.length === 0 && (
@@ -324,7 +412,7 @@ export default function DashboardPage() {
           <TabsContent value="templates" className="mt-0 border-none p-0 outline-none">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {templates.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((project) => (
-                <ProjectCard key={project.id} project={project} isTemplate />
+                <ProjectCard key={project.id} project={project} isTemplate onSelectTemplate={setSelectedTemplate} />
               ))}
 
               {templates.length === 0 && (
@@ -463,6 +551,78 @@ export default function DashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!selectedTemplate} onOpenChange={(open) => !open && setSelectedTemplate(null)}>
+        <DialogContent className="flex max-h-[calc(100dvh-1.5rem)] flex-col gap-0 overflow-hidden rounded-3xl border-border/50 p-0 shadow-2xl sm:w-[calc(100%-2rem)] sm:max-w-lg">
+          <div className="sr-only">
+            <DialogTitle>{selectedTemplate?.name || "Template Preview"}</DialogTitle>
+            <DialogDescription>Preview and use this video template.</DialogDescription>
+          </div>
+          <div className="relative aspect-video w-full bg-muted overflow-hidden">
+            {selectedTemplate?.thumbnail ? (
+              <Image 
+                src={selectedTemplate.thumbnail} 
+                alt={selectedTemplate.name} 
+                fill 
+                className="object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Video className="w-12 h-12 text-muted-foreground/20" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute bottom-6 left-6">
+               <h2 className="text-2xl font-black text-white">{selectedTemplate?.name}</h2>
+               {selectedTemplate?.category && <span className="mt-1 inline-block bg-primary text-primary-foreground text-[10px] font-black uppercase px-2 py-0.5 rounded-md">{selectedTemplate.category}</span>}
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+             <div className="space-y-2">
+                <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">About this template</h3>
+                <p className="text-sm text-foreground/80 leading-relaxed font-medium">
+                   Jumpstart your creation with this professionally designed template. All scenes, styles, and timing are pre-configured to help you build faster.
+                </p>
+             </div>
+
+             <Button 
+                onClick={() => {
+                   if (selectedTemplate) {
+                      handleCopyTemplate(selectedTemplate.id)
+                      setSelectedTemplate(null)
+                   }
+                }}
+                disabled={isCreating}
+                className="w-full h-14 rounded-xl bg-foreground text-background font-black text-lg hover:bg-foreground/90 gap-2 shadow-xl"
+             >
+                <Copy className="w-5 h-5" />
+                Use this Template
+             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+        <AlertDialogContent className="rounded-3xl border-border/50 shadow-2xl sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-black tracking-tight">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="font-medium text-muted-foreground">
+              This action cannot be undone. This will permanently delete your project
+              and remove all associated data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="rounded-xl font-bold h-12">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => projectToDelete && handleDeleteProject(projectToDelete)}
+              className="rounded-xl bg-destructive text-destructive-foreground font-bold h-12 hover:bg-destructive/90"
+            >
+              Delete Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

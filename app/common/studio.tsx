@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { projectService } from "@/lib/services/projectService"
 import { Player } from "@/app/common/player"
 import { Timeline } from "@/app/common/timeline"
 import { Button } from "@/components/ui/button"
@@ -196,6 +197,22 @@ export function Studio({ projectId, projectName, isPublic, isJujuTemplate, image
     return () => window.clearInterval(playbackTimer)
   }, [isPlaying])
 
+  const handleCopyTemplate = async () => {
+    if (!user) {
+      toast.error("Please log in to copy this template")
+      return
+    }
+    const toastId = toast.loading("Copying template to your account...")
+    try {
+      const newProjectId = await projectService.copyProject(user.uid, projectId)
+      toast.success("Project copied successfully!", { id: toastId })
+      router.push(`/dashboard/projects/${newProjectId}`)
+    } catch (error) {
+      console.error("Error copying template:", error)
+      toast.error("Failed to copy template", { id: toastId })
+    }
+  }
+
   const currentScene = scenes[activeSceneIndex]
   const currentMediaUrl = currentScene?.url || ""
   const currentMediaType = currentScene?.type || "image"
@@ -228,6 +245,21 @@ export function Studio({ projectId, projectName, isPublic, isJujuTemplate, image
       console.error("Error saving to Firebase:", error)
     }
   }
+
+  const handleDeleteScene = () => {
+    if (scenes.length === 0) return;
+    
+    // Remove the active scene
+    const newScenes = scenes.filter((_, idx) => idx !== activeSceneIndex);
+    
+    setAllScenes(newScenes);
+    saveToFirebase(newScenes);
+    
+    // Adjust active index
+    if (activeSceneIndex >= newScenes.length) {
+      setActiveSceneIndex(Math.max(0, newScenes.length - 1));
+    }
+  };
 
   const handleGenerateScene = async (prompt: string, style: string): Promise<string | void> => {
     const toastId = toast.loading("Generating scene...")
@@ -467,6 +499,16 @@ export function Studio({ projectId, projectName, isPublic, isJujuTemplate, image
               </TooltipProvider>
             </div>
 
+            {isJujuTemplate && (
+              <Button
+                onClick={handleCopyTemplate}
+                className="h-8 gap-2 bg-primary text-primary-foreground font-black px-4 rounded-lg shadow-lg hover:bg-primary/90 transition-all text-xs ml-2"
+              >
+                <Copy className="h-3.5 w-3.5" />
+                Copy Template
+              </Button>
+            )}
+
             <TooltipProvider delayDuration={250}>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -679,6 +721,7 @@ export function Studio({ projectId, projectName, isPublic, isJujuTemplate, image
             onToolSelect={setActiveTool}
             onSceneSelect={handleSceneSelect}
             onProgressChange={setProgress}
+            onDelete={handleDeleteScene}
           />
         </div>
 

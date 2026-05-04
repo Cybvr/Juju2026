@@ -236,12 +236,16 @@ export function GenerateBox({
                 onClick={reference.onClick}
                 className="flex w-full items-center gap-3 rounded-xl bg-background/60 px-2 py-1.5 text-left transition-colors hover:bg-background"
               >
-                <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                  <img
-                    src={reference.item.image}
-                    alt={reference.item.name}
-                    className="h-full w-full object-cover"
-                  />
+                <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg flex items-center justify-center bg-muted">
+                  {reference.item.image ? (
+                    <img
+                      src={reference.item.image}
+                      alt={reference.item.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    Icon ? <Icon className="h-5 w-5 text-muted-foreground/50" /> : <div className="h-full w-full bg-muted-foreground/10" />
+                  )}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">
                   {reference.item.name}

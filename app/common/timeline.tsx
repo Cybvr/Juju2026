@@ -38,6 +38,7 @@ interface TimelineProps {
   onToolSelect?: (tool: string) => void
   onSceneSelect: (index: number) => void
   onProgressChange: (progress: number) => void
+  onDelete?: () => void
 }
 
 export function Timeline({
@@ -48,6 +49,7 @@ export function Timeline({
   onToolSelect,
   onSceneSelect,
   onProgressChange,
+  onDelete,
 }: TimelineProps) {
   const [timelineZoom, setTimelineZoom] = useState(128)
   const rulerRef = useRef<HTMLDivElement>(null)
@@ -110,7 +112,7 @@ export function Timeline({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => toast.info("Delete")}
+              onClick={() => onDelete ? onDelete() : toast.info("Delete")}
               className="h-6 w-6 rounded-md text-muted-foreground hover:bg-secondary hover:text-destructive hover:bg-destructive/10 transition-colors"
             >
               <Trash2 className="h-3.5 w-3.5" />

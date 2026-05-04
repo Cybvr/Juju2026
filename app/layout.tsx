@@ -4,6 +4,7 @@ import { Outfit, Geist_Mono, Playfair_Display } from 'next/font/google'
 import { Toaster } from "sonner"
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import { PwaRegister } from "@/components/pwa-register"
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -13,9 +14,20 @@ const outfit = Outfit({
 const _playfair = Playfair_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://juju.app'),
   title: 'Juju - AI Cartoon Video Generation',
   description: 'Create epic cartoon videos with just a script. AI-powered storytelling for creators and agencies.',
   generator: 'v0.app',
+  manifest: '/manifest.webmanifest',
+  applicationName: 'Juju',
+  appleWebApp: {
+    capable: true,
+    title: 'Juju',
+    statusBarStyle: 'black-translucent',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: [
       {
@@ -30,9 +42,20 @@ export const metadata: Metadata = {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
+      {
+        url: '/icon-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        url: '/icon-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
     ],
     apple: '/apple-icon.png',
   },
+  themeColor: '#09090b',
 }
 
 import { ThemeProvider } from "@/components/theme-provider"
@@ -54,6 +77,7 @@ export default function RootLayout({
           {children}
           <Toaster position="top-center" />
           <Analytics />
+          <PwaRegister />
         </ThemeProvider>
       </body>
     </html>

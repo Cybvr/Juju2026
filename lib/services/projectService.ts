@@ -27,6 +27,25 @@ export const projectService = {
         return docRef.id
     },
 
+    async copyProject(userId: string, projectIdToCopy: string): Promise<string> {
+        const docRef = doc(db, "projects", projectIdToCopy)
+        const docSnap = await getDoc(docRef)
+        if (!docSnap.exists()) throw new Error("Project not found")
+        
+        const data = docSnap.data()
+        
+        const newDocRef = await addDoc(collection(db, "projects"), {
+            name: `${data.name} (Copy)`,
+            userId,
+            thumbnail: data.thumbnail || "",
+            thumbnailType: data.thumbnailType || "image",
+            scenes: data.scenes || [],
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        })
+        return newDocRef.id
+    },
+
     // Get all projects for a user
     async getUserProjects(userId: string): Promise<Project[]> {
         const q = query(
